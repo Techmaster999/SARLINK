@@ -1,0 +1,5 @@
+allowBuilds:
+  fsevents: set this to true or false
+  nodemon: set this to true or false
+minimumReleaseAgeExclude:
+  - dotenv@18.0.8
