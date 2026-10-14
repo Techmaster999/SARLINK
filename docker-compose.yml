@@ -1,0 +1,32 @@
+services:
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: pern-postgres-dev
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: perndb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pern-app-dev
+    ports:
+      - "5000:5000"       
+    volumes:
+      - ./client:/app          # Links your local client folder to the container's workspace
+      - /app/node_modules      # Keeps container packages completely isolated
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://myuser:mypassword@postgres-db:5432/perndb
+    depends_on:
+      - postgres-db
+
+volumes:
+  postgres_data:
