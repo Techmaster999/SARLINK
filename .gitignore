@@ -110,6 +110,19 @@ dist
 # Serverless directories
 .serverless/
 
+#node modules folder
+/node_modules
+.pnpm-store/
+pnpm-debug.log*
+
+#docker artifacts
+.docker/
+docker-compose.override.yml
+
+#OS overhead files 
+.DS_Store
+Thumbs.db
+
 # FuseBox cache
 .fusebox/
 
