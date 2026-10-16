@@ -18,13 +18,14 @@ services:
       dockerfile: Dockerfile
     container_name: pern-app-dev
     ports:
-      - "5000:5000"       
+      - "8888:8888"
     volumes:
       - ./client:/app          # Links your local client folder to the container's workspace
       - /app/node_modules      # Keeps container packages completely isolated
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://myuser:mypassword@postgres-db:5432/perndb
+    command: sh -c "pnpm install --ignore-scripts && pnpm run dev"
     depends_on:
       - postgres-db
 
