@@ -116,3 +116,15 @@ export const authEnvSchema = z
 
 // ------------- errors -------------
 
+export class AuthConfigError extends Error {
+    constructor(errors) {
+        super(
+            `Invalid.authentication configuration (${errors.length} problems${errors.length === 1 ? '' : 's'}):\n` + 
+            errors.map((e) => `  • ${e.variable}: ${e.message}`).join('\n'),
+        );
+        this.name = 'AuthConfigError';
+        this.errors = errors;
+    }
+}
+
+// ------------- public API -------------
