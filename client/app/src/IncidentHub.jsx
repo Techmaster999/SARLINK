@@ -18,7 +18,6 @@ const ICONS = {
   clock: ["M22 12a10 10 0 1 0-20 0a10 10 0 0 0 20 0", "M12 6v6l4 2"],
   plus: ["M5 12h14", "M12 5v14"],
   logout: ["M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", "m16 17 5-5-5-5", "M21 12H9"],
-  chevron: ["m9 18 6-6-6-6"],
 };
 
 function Icon({ name, size = 18 }) {
@@ -150,7 +149,6 @@ function IncidentOverview() {
           ))}
         </div>
 
-        {/* Desktop table */}
         <div className="table-scroll">
           <div className="table-header">
             <span>Incident ID</span>
@@ -250,18 +248,6 @@ export default function IncidentHubLayout() {
           <Route path="/admin" element={<Placeholder title="Admin" />} />
         </Routes>
       </main>
-
-      <nav className="bottom-nav">
-        {NAV.map((n) => (
-          <NavLink key={n.to} to={n.to} end className="bottom-link">
-            <span className="bottom-icon">
-              <Icon name={n.icon} size={22} />
-              {n.badge && <span className="bottom-badge">{n.badge}</span>}
-            </span>
-            {n.label}
-          </NavLink>
-        ))}
-      </nav>
     </div>
   );
 }
