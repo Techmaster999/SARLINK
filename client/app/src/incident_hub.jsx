@@ -1,54 +1,135 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
-} from "react-router-dom";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import "./style.css";
 
 function renderIncidentOverview() {
   const incidents = [
     {
       id: "INC-001",
-      title: "Network outage",
+      team: "Team Alpha",
+      incident: "Network outage",
       location: "Downtown facility",
+      personnel: 12,
       status: "Active",
+      updated: "10:45 AM",
     },
     {
       id: "INC-002",
-      title: "Power disruption",
+      team: "Team Bravo",
+      incident: "Power disruption",
       location: "North campus",
-      status: "Investigating",
+      personnel: 8,
+      status: "Active",
+      updated: "9:30 AM",
     },
   ];
 
   return (
-    <section className="incident-overview">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Incident Hub</p>
-          <h1>Ongoing incidents</h1>
+    <div className="dashboard">
+      <section className="dashboard-overview">
+        <div className="dashboard-heading">
+          <div className="heading-copy">
+            <p className="eyebrow">Incident Hub</p>
+
+            <h1 className="dashboard-title">
+              Incident teams dashboard
+            </h1>
+
+            <p className="dashboard-description">
+              Monitor ongoing incidents and field team assignments.
+            </p>
+          </div>
+
+          <button className="secondary-button">
+            New incident
+          </button>
         </div>
 
-        <span className="incident-count">
-          {incidents.length} active
-        </span>
-      </div>
+        <div className="incident-summary">
+          <article className="summary-card">
+            <p className="summary-label">Ongoing incidents</p>
+            <p className="summary-value">{incidents.length}</p>
+            <p className="summary-detail">Currently active</p>
+          </article>
 
-      <div className="incident-list">
-        {incidents.map((incident) => (
-          <article className="incident-card" key={incident.id}>
-            <div>
-              <p className="incident-id">{incident.id}</p>
-              <h2>{incident.title}</h2>
-              <p>{incident.location}</p>
+          <article className="summary-card">
+            <p className="summary-label">Response teams</p>
+            <p className="summary-value">8</p>
+            <p className="summary-detail">Teams assigned</p>
+          </article>
+
+          <article className="summary-card">
+            <p className="summary-label">Personnel deployed</p>
+            <p className="summary-value">20</p>
+            <p className="summary-detail">Currently in the field</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="field-team-assignments">
+        <div className="assignment-table">
+          <div className="table-heading">
+            <div className="table-heading-copy">
+              <h2 className="table-title">
+                Ongoing incidents
+              </h2>
+
+              <p className="table-detail">
+                Current field team assignments
+              </p>
             </div>
 
-            <span className="status-badge">{incident.status}</span>
-          </article>
-        ))}
-      </div>
-    </section>
+            <span className="brand-badge">
+              Active
+            </span>
+          </div>
+
+          <div className="table-header">
+            <p className="table-label">Team</p>
+            <p className="table-label">Incident</p>
+            <p className="table-label">Assignment / Location</p>
+            <p className="table-label">Personnel</p>
+            <p className="table-label">Status</p>
+            <p className="table-label">Last update</p>
+          </div>
+
+          {incidents.map((incident) => (
+            <div className="table-row" key={incident.id}>
+              <div className="table-cell">
+                <p className="table-label">{incident.team}</p>
+                <p className="table-detail">{incident.id}</p>
+              </div>
+
+              <div className="table-cell">
+                <p className="table-label">{incident.incident}</p>
+                <p className="table-detail">{incident.id}</p>
+              </div>
+
+              <div className="table-cell">
+                <p className="table-label">{incident.location}</p>
+                <p className="table-detail">
+                  Field response location
+                </p>
+              </div>
+
+              <div className="table-cell">
+                <p className="table-label">{incident.personnel}</p>
+              </div>
+
+              <div className="table-cell">
+                <span className="brand-badge">
+                  {incident.status}
+                </span>
+              </div>
+
+              <div className="table-cell">
+                <p className="table-label">Today</p>
+                <p className="table-detail">{incident.updated}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -94,12 +175,10 @@ function IncidentHubLayout() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <IncidentHubLayout />
     </BrowserRouter>
   );
 }
-
-export default App;
