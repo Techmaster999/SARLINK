@@ -35,3 +35,54 @@ const requiredString = (name) =>
     z.string({ error: '${name} is required' }).trim().min(1, '${name} is required');
 
 // ------------- helpers -------------
+
+export const authEnvSchema = z
+    .object({
+        NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+        PORT: z.coerce.number().int().min(1).max(65535).default(5000),
+
+        APP_BASE_URL: httpsUrl('APP_BASE_URL'),
+        CLIENT_URL: httpUrl('CLIENT_URL'),
+        
+        GOOGLE_CLIENT_ID: requiredString('GOOGLE_CLIENT_ID').refine(
+            (v) => v.endsWith('.apps.googleusercontent.com'),
+            'GOOGLE_CLIENT_ID should end with ".apps.googleusercontent.com" - copy it from Google Cloud Console',
+        ),
+        GOOGLE_CLIENT_SECRET: requiredString('GOOGLE_CLIENT_SECRET').refine(
+            (v) => !/^(changeme|your[-_]?client[-_]?secret|xxx+)$/i.test(v),
+            'GOOGLE_CLIENT_SECRET still contains a placeholder value',
+        ),
+
+        GOOGLE_REDIRECT_URI: httpUrl('GOOGLE_REDIRECT_URI'),
+
+        GOOGLE_WORKSPACE_DOMAINS: requiredString('GOOGLE_WORKSPACE_DOMAINS')
+            .transform((v) =>
+                v
+                    .split(',')
+                    .map((d) => d.trim().toLowerCase())
+                    .filter(Boolean),
+            )
+            .pipe(
+                z 
+                    .array(
+                        z
+                            .string()
+                            .regex(
+                                /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/,
+                                'GOOGLE_WORKSPACE_DOMAINS entries must be bare domains like "sarlink.org"',
+                            ),
+                    )
+                    .min(1, 'GOOGLE_WORKSPACE_DOMAINS must list at least one domain')
+            ),
+        
+        GOOGLE_SCOPES: z
+            .string()
+            .optional()
+            .transform((v) => [...new Set([...REQUIRED_SCOPES, ...GOOGLE_OIDC(v ?? '').split(/\s+/).filter(Boolean)])]),
+        
+        SESSION_SECRET: requiredString('SESSION_SECRET').min(
+            32,
+            'SESSION_SECRET must be at least 32 characters (generate one with: openssl rand -base64 48)',
+        ),
+    })
+    .superRefine((env, ctx))
