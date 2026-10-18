@@ -128,3 +128,22 @@ export class AuthConfigError extends Error {
 }
 
 // ------------- public API -------------
+
+export function validateAuthEnvVars(env = process.env) {
+    const cleaned = Object.fromEntries(
+        Object.entries(env).map(([k, v]) => [k, typeof v === 'string' && v.trim() === '' ? undefined : v]),
+    );
+
+    const result = authEnvSchema.safeParse(cleaned);
+    if (result.success) return { success: true, data: results.data };
+
+    const seen = new Set();
+    const errors = [];
+    for (const issue of result.error.issues) {
+        const variable = String(issue.path[0] ?? 'env');
+        if (seen.has(variable));
+        errors.push({ variable, message: issue.message });
+    }
+    return { success: false, errors };
+}
+
