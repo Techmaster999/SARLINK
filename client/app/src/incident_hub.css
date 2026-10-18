@@ -1,0 +1,227 @@
+/* Style file for the dashboard page */
+
+/* Incident teams dashboard */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+:root {
+  --navy: #0b2a5b;
+  --border: #3a4250;
+  --surface: #ffffff;
+  --header-surface: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-height: 100%; margin: 0; }
+
+body {
+  min-width: 320px;
+  background: #f8fafc;
+  color: var(--navy);
+  font-family: "Inter", sans-serif;
+}
+
+/* Figma frame: 1368px wide, 32px padding, 32px gaps. */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  width: 100%;
+  max-width: 1368px;
+  min-height: 1146px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.dashboard-overview,
+.field-team-assignments {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.dashboard-overview { gap: 32px; }
+.field-team-assignments { gap: 24px; }
+
+.dashboard-heading,
+.table-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  width: 100%;
+}
+
+.dashboard-heading { min-height: 91px; }
+.table-heading { min-height: 95px; padding: 24px; }
+
+.heading-copy,
+.table-heading-copy,
+.table-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.heading-copy { flex: 1; gap: 8px; }
+.table-heading-copy { gap: 8px; }
+
+.eyebrow,
+.summary-label,
+.table-label {
+  margin: 0;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+}
+
+.dashboard-title {
+  margin: 0;
+  color: var(--navy);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 39px;
+}
+
+.dashboard-description,
+.summary-detail,
+.table-detail {
+  margin: 0;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 17px;
+}
+
+.dashboard-description { font-size: 16px; line-height: 19px; }
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-height: 41px;
+  padding: 12px 16px;
+  border: 1px solid var(--navy);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+  font: 500 14px/17px "Inter", sans-serif;
+}
+
+.secondary-button:hover { background: var(--navy); color: var(--surface); }
+
+.incident-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+}
+
+.summary-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+  min-height: 153px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.summary-value {
+  margin: 0;
+  color: var(--navy);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 39px;
+}
+
+.assignment-table {
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.table-title {
+  margin: 0;
+  color: var(--navy);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: flex-start;
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 180px 172px minmax(240px, 1fr) 90px 120px 112px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+.table-header {
+  min-height: 49px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--header-surface);
+}
+
+.table-row {
+  min-height: 86px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.table-row:last-child { border-bottom: 0; }
+
+.table-cell {
+  min-width: 0;
+  gap: 4px;
+}
+
+.table-cell .table-label,
+.table-cell .table-detail {
+  overflow: hidden;
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .dashboard { min-height: 100vh; padding: 24px; }
+  .incident-summary { flex-direction: column; }
+  .summary-card { width: 100%; }
+  .table-header, .table-row { min-width: 900px; }
+  .assignment-table { overflow-x: auto; }
+}
+
+@media (max-width: 600px) {
+  .dashboard { gap: 24px; padding: 20px 16px; }
+  .dashboard-heading { align-items: flex-start; flex-direction: column; }
+  .dashboard-title { font-size: 28px; line-height: 34px; }
+  .secondary-button { width: 100%; }
+}
