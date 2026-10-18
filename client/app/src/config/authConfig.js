@@ -28,13 +28,13 @@ const httpUrl = (name) =>
             } catch {
                 return false;
             }
-        }, '${name} must be a valid http(s) URL')
+        }, `${name} must be a valid http(s) URL`)
         .transform((v) => v.replace(/\/+$/, ''));
 
 const requiredString = (name) =>
-    z.string({ error: '${name} is required' }).trim().min(1, '${name} is required');
+    z.string({ error: `${name} is required` }).trim().min(1, `${name} is required`);
 
-// ------------- helpers -------------
+// ------------- schema -------------
 
 export const authEnvSchema = z
     .object({
@@ -69,7 +69,7 @@ export const authEnvSchema = z
                             .string()
                             .regex(
                                 /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/,
-                                'GOOGLE_WORKSPACE_DOMAINS entries must be bare domains like "sarlink.org"',
+                                'GOOGLE_WORKSPACE_DOMAINS entries must be bare domains like "@edsar.org"',
                             ),
                     )
                     .min(1, 'GOOGLE_WORKSPACE_DOMAINS must list at least one domain')
@@ -85,4 +85,34 @@ export const authEnvSchema = z
             'SESSION_SECRET must be at least 32 characters (generate one with: openssl rand -base64 48)',
         ),
     })
-    .superRefine((env, ctx))
+    .superRefine((env, ctx) => {
+        if (env.GOOGLE_REDIRECT_URI && env.APP_BASE_URL) {
+            try {
+                if(new URL(env.GOOGLE_REDIRECT_URI).origin !== new URL(env.APP_BASE_URL).origin) {
+                    ctx.addIssue({
+                        code: 'custom',
+                        path: ['GOOGLE_REDIRECT_URI'],
+                        message: `GOOGLE_REDIRECT_URI must be on the origin as APP_BASE_URL (${env.APP_BASE_URL})`,
+                    });
+                }
+            } catch {
+                /* individual URL errors already reported */
+            }
+        }
+
+        if (env.NODE_ENV === 'production') {
+            for (const key of ['APP_BASE_URL', 'CLIENT_URL', "GOOGLE_REDIRECT_URI"]) {
+                const v = env[key];
+                try {
+                    if (v && new URL(v).protocol !== 'https:' && !isLocalhost(v)) {
+                        ctx.addIssue({ code: 'custom', path: [key], message: `${key} must use https in production` });  
+                    }
+                } catch {
+                    /* already reported */
+                }
+            }
+        }
+    });
+
+// ------------- errors -------------
+
