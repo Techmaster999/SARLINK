@@ -3,16 +3,23 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -L app/src/main.js"
+  "server": "nodemon -L app/src/main.js",
+  "client": "vite",
+  "build": "vite build",
+  "preview": "vite preview"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "nodemon": "^3.1.14",
-    "pg": "^8.11.5"
+    "pg": "^8.11.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.4"
   },
-  "pnpm": {
-    "verifyDepsBeforeRun": false
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.4"
   }
 }
