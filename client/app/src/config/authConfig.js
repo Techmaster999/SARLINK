@@ -41,9 +41,11 @@ export const authEnvSchema = z
         NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
         PORT: z.coerce.number().int().min(1).max(65535).default(5000),
 
+        // Where the Express API is reachable, and where the React app lives
         APP_BASE_URL: httpsUrl('APP_BASE_URL'),
         CLIENT_URL: httpUrl('CLIENT_URL'),
         
+        // Google Cloud Constole -> APIs & Services -> Credentials -> OAuth 2.0 Client ID (type: Web application)
         GOOGLE_CLIENT_ID: requiredString('GOOGLE_CLIENT_ID').refine(
             (v) => v.endsWith('.apps.googleusercontent.com'),
             'GOOGLE_CLIENT_ID should end with ".apps.googleusercontent.com" - copy it from Google Cloud Console',
@@ -53,8 +55,10 @@ export const authEnvSchema = z
             'GOOGLE_CLIENT_SECRET still contains a placeholder value',
         ),
 
+        // Must match an "Authorized redirect URI" in the Google console EXACTLY.
         GOOGLE_REDIRECT_URI: httpUrl('GOOGLE_REDIRECT_URI'),
 
+        // Comma-seperated Workspace domain(s) allowed to sign in, e.g. "@edsar.org"
         GOOGLE_WORKSPACE_DOMAINS: requiredString('GOOGLE_WORKSPACE_DOMAINS')
             .transform((v) =>
                 v
@@ -75,17 +79,20 @@ export const authEnvSchema = z
                     .min(1, 'GOOGLE_WORKSPACE_DOMAINS must list at least one domain')
             ),
         
+        // Optional: space-seperated scopes. openid/email/profiles are always enforced.
         GOOGLE_SCOPES: z
             .string()
             .optional()
             .transform((v) => [...new Set([...REQUIRED_SCOPES, ...GOOGLE_OIDC(v ?? '').split(/\s+/).filter(Boolean)])]),
         
+        // Signs the session cookie that is issued after a succesful Google login.
         SESSION_SECRET: requiredString('SESSION_SECRET').min(
             32,
             'SESSION_SECRET must be at least 32 characters (generate one with: openssl rand -base64 48)',
         ),
     })
     .superRefine((env, ctx) => {
+        // Redirect URI must point back at this API, not the REACT dev server.
         if (env.GOOGLE_REDIRECT_URI && env.APP_BASE_URL) {
             try {
                 if(new URL(env.GOOGLE_REDIRECT_URI).origin !== new URL(env.APP_BASE_URL).origin) {
@@ -100,6 +107,7 @@ export const authEnvSchema = z
             }
         }
 
+        // Production: everything must be HTTPS (Google also rejects http redirect URI except localhost).
         if (env.NODE_ENV === 'production') {
             for (const key of ['APP_BASE_URL', 'CLIENT_URL', "GOOGLE_REDIRECT_URI"]) {
                 const v = env[key];
@@ -130,6 +138,7 @@ export class AuthConfigError extends Error {
 // ------------- public API -------------
 
 export function validateAuthEnvVars(env = process.env) {
+    // Treat empty strings as "missing" so `GOOGLE_CLIENT_ID=` in .env is caught.
     const cleaned = Object.fromEntries(
         Object.entries(env).map(([k, v]) => [k, typeof v === 'string' && v.trim() === '' ? undefined : v]),
     );
@@ -137,6 +146,7 @@ export function validateAuthEnvVars(env = process.env) {
     const result = authEnvSchema.safeParse(cleaned);
     if (result.success) return { success: true, data: results.data };
 
+    // One message per variable (the first, most relevant one).
     const seen = new Set();
     const errors = [];
     for (const issue of result.error.issues) {
