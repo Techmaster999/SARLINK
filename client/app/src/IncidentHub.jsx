@@ -1,5 +1,7 @@
+/* Incident Hub - React application for monitoring ongoing incidents and field team assignments */
+
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import "./style.css";
+import "./IncidentHub.css";
 
 function renderIncidentOverview() {
   const incidents = [
