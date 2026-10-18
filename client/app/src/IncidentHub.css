@@ -223,3 +223,96 @@ body {
   .dashboard-title { font-size: 28px; line-height: 34px; }
   .secondary-button { width: 100%; }
 }
+
+/* Incident Hub page shell */
+
+.incident-hub {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 72px 1fr;
+  min-height: 100vh;
+}
+
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 22px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-actions button {
+  padding: 8px 12px;
+  border: 1px solid var(--navy);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.sidebar {
+  grid-row: 2;
+  padding: 32px 20px;
+  background: var(--navy);
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar a {
+  padding: 12px;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+}
+
+.sidebar a:hover {
+  background: #24477c;
+}
+
+.main-content {
+  min-width: 0;
+  padding: 32px;
+}
+
+@media (max-width: 700px) {
+  .incident-hub {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .header {
+    grid-column: 1;
+  }
+
+  .sidebar {
+    grid-row: 2;
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .main-content {
+    grid-row: 3;
+    padding: 20px;
+  }
+}

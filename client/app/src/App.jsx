@@ -8,11 +8,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
-export default function App() {
-  return (
-    <main>
-      <p>Frontend is working.</p>
-    </main>
-  );
-}

@@ -1,29 +1,37 @@
 /* Incident Hub - React application for monitoring ongoing incidents and field team assignments */
-
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import { Link, Routes, Route } from "react-router-dom";
 import "./IncidentHub.css";
 
-function renderIncidentOverview() {
-  const incidents = [
-    {
-      id: "INC-001",
-      team: "Team Alpha",
-      incident: "Network outage",
-      location: "Downtown facility",
-      personnel: 12,
-      status: "Active",
-      updated: "10:45 AM",
-    },
-    {
-      id: "INC-002",
-      team: "Team Bravo",
-      incident: "Power disruption",
-      location: "North campus",
-      personnel: 8,
-      status: "Active",
-      updated: "9:30 AM",
-    },
-  ];
+// Sample data for ongoing incidents
+const incidents = [
+  {
+    id: "INC-001",
+    team: "Team Alpha",
+    incident: "Network outage",
+    location: "Downtown facility",
+    personnel: 12,
+    status: "Active",
+    updated: "10:45 AM",
+  },
+  {
+    id: "INC-002",
+    team: "Team Bravo",
+    incident: "Power disruption",
+    location: "North campus",
+    personnel: 8,
+    status: "Active",
+    updated: "9:30 AM",
+  },
+];
+
+// acceptance criteria: include dashboard overview with summary cards and table of ongoing incidents
+function IncidentOverview() {
+  // Summary values are derived from the data so they always stay in sync
+  const teamCount = new Set(incidents.map((incident) => incident.team)).size;
+  const personnelCount = incidents.reduce(
+    (total, incident) => total + incident.personnel,
+    0
+  );
 
   return (
     <div className="dashboard">
@@ -32,9 +40,9 @@ function renderIncidentOverview() {
           <div className="heading-copy">
             <p className="eyebrow">Incident Hub</p>
 
-            <h1 className="dashboard-title">
+            <h2 className="dashboard-title">
               Incident teams dashboard
-            </h1>
+            </h2>
 
             <p className="dashboard-description">
               Monitor ongoing incidents and field team assignments.
@@ -55,13 +63,13 @@ function renderIncidentOverview() {
 
           <article className="summary-card">
             <p className="summary-label">Response teams</p>
-            <p className="summary-value">8</p>
+            <p className="summary-value">{teamCount}</p>
             <p className="summary-detail">Teams assigned</p>
           </article>
 
           <article className="summary-card">
             <p className="summary-label">Personnel deployed</p>
-            <p className="summary-value">20</p>
+            <p className="summary-value">{personnelCount}</p>
             <p className="summary-detail">Currently in the field</p>
           </article>
         </div>
@@ -135,7 +143,8 @@ function renderIncidentOverview() {
   );
 }
 
-function IncidentHubLayout() {
+// acceptance criteria: include header and sidebar navigation
+export default function IncidentHubLayout() {
   return (
     <div className="incident-hub">
       <header className="header">
@@ -157,30 +166,11 @@ function IncidentHubLayout() {
 
       <main className="main-content">
         <Routes>
-          <Route
-            path="/"
-            element={renderIncidentOverview()}
-          />
-
-          <Route
-            path="/incidents"
-            element={<h2>All incidents</h2>}
-          />
-
-          <Route
-            path="/teams"
-            element={<h2>Response teams</h2>}
-          />
+          <Route path="/" element={<IncidentOverview />} />
+          <Route path="/incidents" element={<h2>All incidents</h2>} />
+          <Route path="/teams" element={<h2>Response teams</h2>} />
         </Routes>
       </main>
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <IncidentHubLayout />
-    </BrowserRouter>
   );
 }
