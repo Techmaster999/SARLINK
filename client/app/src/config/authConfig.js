@@ -147,3 +147,34 @@ export function validateAuthEnvVars(env = process.env) {
     return { success: false, errors };
 }
 
+export function loadAuthConfig({ envPath, env } = {}) {
+    if (!env) {
+        dotenv.config({ path: envPath, quiet: true });
+        env = process.env;
+    }
+
+    const result = validateAuthEnvVars(env);
+    if (!result.success) throw new AuthConfigError(result.errors);
+
+    const e = result.data;
+    return Object.freeze({
+        env: e.NODE_ENV,
+        isProduction: e.NODE_ENV === 'production',
+        port: e.PORT,
+        appBaseUrl: e.CLIENT_URL,
+        google: Object.freeze({
+            ...GOOGLE_OIDC,
+            clientId: e.GOOGLE_CLIENT_ID,
+            clientSecret: e.GOOGLE_CLIENT_SECRET,
+            redirectUri: e.GOOGLE_REDIRECT_URI,
+            scopes: Object.freeze(e.GOOGLE_SCOPES),
+            allowedDomains; Object.freeze(e.GOOGLE_SCOPES),
+            hostedDomainHint: e.GOOGLE_WORKSPACE_DOMAINS.length === 1 ? e.GOOGLE_WORKSPACE_DOMAINS[0] : '*',
+        }),
+        session: Object.freeze({
+            secret: e.SESSION_SECRET,
+            cookieSecure: e.NODE_ENV === 'production',
+        }),
+    });
+}
+
