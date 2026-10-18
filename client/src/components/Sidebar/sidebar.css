@@ -1,0 +1,189 @@
+/* SARLink Sidebar Navigation Styling */
+
+.sarlink-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background-color: #0f172a; /* Deep Slate Navy */
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  border-right: 1px solid #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  user-select: none;
+  transition: width 0.25s ease;
+}
+
+/* Sidebar Brand Header */
+.sarlink-sidebar-brand {
+  padding: 24px 20px 20px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sarlink-sidebar-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.sarlink-sidebar-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.sarlink-sidebar-app-name {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+}
+
+.sarlink-sidebar-app-tag {
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Navigation Section */
+.sarlink-sidebar-nav {
+  flex: 1;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.sarlink-nav-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.75px;
+  padding: 8px 12px 6px 12px;
+  margin-top: 8px;
+}
+
+.sarlink-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+  position: relative;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.sarlink-nav-item:hover {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.sarlink-nav-item.active {
+  background-color: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+  font-weight: 600;
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+.sarlink-nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.sarlink-nav-label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+/* Badges */
+.sarlink-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.sarlink-admin-badge {
+  background-color: rgba(245, 158, 11, 0.18);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.sarlink-count-badge {
+  background-color: #1e293b;
+  color: #cbd5e1;
+}
+
+/* User Profile Footer */
+.sarlink-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #090e1a;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sarlink-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #334155;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  border: 1.5px solid #475569;
+}
+
+.sarlink-user-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sarlink-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.sarlink-user-role {
+  font-size: 11px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sarlink-user-role.admin {
+  color: #f59e0b;
+  font-weight: 600;
+}
