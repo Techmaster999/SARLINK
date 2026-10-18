@@ -1,0 +1,135 @@
+/* Auth Feedback & Error Notification Styles for SARLink */
+
+.sarlink-auth-feedback-container {
+  margin: 16px 0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: slideInDown 0.25s ease-out;
+  border-left: 4px solid transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Category-based theme colorings */
+.sarlink-feedback-INVALID_CREDENTIALS {
+  background-color: #fef2f2;
+  border-left-color: #ef4444;
+  color: #991b1b;
+}
+
+.sarlink-feedback-ACCOUNT_LOCKED {
+  background-color: #fffbeb;
+  border-left-color: #f59e0b;
+  color: #92400e;
+}
+
+.sarlink-feedback-NETWORK_ERROR {
+  background-color: #eff6ff;
+  border-left-color: #3b82f6;
+  color: #1e40af;
+}
+
+.sarlink-feedback-GOOGLE_WORKSPACE_ERROR {
+  background-color: #f5f3ff;
+  border-left-color: #8b5cf6;
+  color: #5b21b6;
+}
+
+.sarlink-feedback-SERVER_ERROR {
+  background-color: #fef2f2;
+  border-left-color: #dc2626;
+  color: #7f1d1d;
+}
+
+.sarlink-feedback-UNKNOWN_ERROR {
+  background-color: #f9fafb;
+  border-left-color: #6b7280;
+  color: #374151;
+}
+
+.sarlink-feedback-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+}
+
+.sarlink-feedback-body {
+  flex: 1;
+}
+
+.sarlink-feedback-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.sarlink-feedback-message {
+  margin-bottom: 6px;
+  color: inherit;
+  opacity: 0.95;
+}
+
+.sarlink-feedback-tip {
+  font-size: 12.5px;
+  opacity: 0.85;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sarlink-feedback-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.sarlink-retry-btn {
+  background-color: transparent;
+  border: 1px solid currentColor;
+  color: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.sarlink-retry-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sarlink-feedback-close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0 4px;
+  margin-left: auto;
+  border-radius: 4px;
+}
+
+.sarlink-feedback-close-btn:hover {
+  opacity: 1;
+}
