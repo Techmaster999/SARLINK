@@ -168,8 +168,10 @@ export function loadAuthConfig({ envPath, env } = {}) {
             clientSecret: e.GOOGLE_CLIENT_SECRET,
             redirectUri: e.GOOGLE_REDIRECT_URI,
             scopes: Object.freeze(e.GOOGLE_SCOPES),
-            allowedDomains; Object.freeze(e.GOOGLE_SCOPES),
+            allowedDomains: Object.freeze(e.GOOGLE_SCOPES),
             hostedDomainHint: e.GOOGLE_WORKSPACE_DOMAINS.length === 1 ? e.GOOGLE_WORKSPACE_DOMAINS[0] : '*',
+            // "hd" hints Google's account chooser to the workspace domain. It is only a UI hint
+            // the callback MUST still verify the ID token's `hd` claim against allowedDomains.
         }),
         session: Object.freeze({
             secret: e.SESSION_SECRET,
@@ -178,3 +180,11 @@ export function loadAuthConfig({ envPath, env } = {}) {
     });
 }
 
+export function redactAuthConfig(config) {
+    const mask = (s) => (s ? `${s.slice(0, 4)}…(${s.length} chars)` : s);
+    return {
+        ...config,
+        google: { ...config.google, clientSecret: mask(config.google.clientSecret) },
+        session: { ...config.session, secret: mask(config.session.secret) },
+    };
+}
