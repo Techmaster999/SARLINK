@@ -1,0 +1,164 @@
+.sarlink-header {
+  width: 100%;
+  min-height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-bottom: 1px solid #d5d9df;
+  color: #0a0a0a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.sarlink-header-brand,
+.sarlink-header-actions,
+.sarlink-header-button {
+  display: flex;
+  align-items: center;
+}
+
+.sarlink-header-brand {
+  min-width: 0;
+  gap: 8px;
+}
+
+.sarlink-header-logo {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: #0b2a5b;
+  color: #ffffff;
+}
+
+.sarlink-header-logo-mark {
+  width: 20px;
+  height: 20px;
+}
+
+.sarlink-header-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.sarlink-header-agency {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #0b2a5b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.sarlink-header-actions {
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.sarlink-header-button {
+  min-height: 36px;
+  gap: 8px;
+  padding: 8px 13px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sarlink-header-button:focus-visible {
+  outline: 3px solid rgba(18, 58, 122, 0.3);
+  outline-offset: 2px;
+}
+
+.sarlink-header-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.sarlink-header-button-primary {
+  background: #0b2a5b;
+  color: #ffffff;
+}
+
+.sarlink-header-button-primary:hover:not(:disabled) {
+  background: #123a7a;
+}
+
+.sarlink-header-button-secondary {
+  background: transparent;
+  color: #5b6470;
+}
+
+.sarlink-header-button-secondary:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #0a0a0a;
+}
+
+.sarlink-header-button-icon,
+.sarlink-header-button-icon svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.sarlink-header-divider {
+  width: 1px;
+  height: 24px;
+  flex-shrink: 0;
+  background: #d5d9df;
+}
+
+@media (max-width: 640px) {
+  .sarlink-header {
+    min-height: 56px;
+    padding: 0 16px;
+    gap: 10px;
+  }
+
+  .sarlink-header-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .sarlink-header-logo-mark {
+    width: 18px;
+    height: 18px;
+  }
+
+  .sarlink-header-name {
+    font-size: 16px;
+  }
+
+  .sarlink-header-agency {
+    display: none;
+  }
+
+  .sarlink-header-actions {
+    gap: 7px;
+  }
+
+  .sarlink-header-button {
+    width: 34px;
+    min-height: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .sarlink-header-button-label,
+  .sarlink-header-divider {
+    display: none;
+  }
+}

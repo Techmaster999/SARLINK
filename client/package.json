@@ -3,14 +3,23 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-  "dev": "nodemon -L app/src/main.js"
+    "dev": "nodemon -L app/src/main.js",
+    "server": "nodemon -L app/src/main.js",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:sidebar": "node src/components/Sidebar/runSidebarTests.js",
+    "test:auth": "node src/auth/runTests.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "@react-oauth/google": "^0.13.5",
+    "axios": "^1.7.9",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.3",
+    "express-session": "^1.19.0",
+    "google-auth-library": "^11.3.0",
     "nodemon": "^3.1.14",
-    "pg": "^8.11.5",
+    "pg": "^8.23.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4"
