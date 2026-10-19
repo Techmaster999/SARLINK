@@ -3,7 +3,7 @@ import { useState } from "react";
 import { NavLink, Routes, Route } from "react-router-dom";
 import "./IncidentHub.css";
 
-// Inline icons (Lucide-style paths) so no extra dependency is needed
+// Inline icons so no extra dependency is needed
 const ICONS = {
   hex: ["M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z", "M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0"],
   alert: ["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3", "M12 9v4", "M12 17h.01"],
@@ -20,6 +20,7 @@ const ICONS = {
   logout: ["M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", "m16 17 5-5-5-5", "M21 12H9"],
 };
 
+// Icon component to render SVG icons based on the ICONS object
 function Icon({ name, size = 18 }) {
   return (
     <svg
@@ -41,7 +42,7 @@ function Icon({ name, size = 18 }) {
   );
 }
 
-// Sample data
+// Sample data - can be removed once database is connected. This is just to show how the dashboard will look with real data.
 const incidents = [
   { id: "INC-2026-041", title: "Lost Hikers – Desolation Wilderness", location: "Desolation Wilderness, El Dorado Co.", status: "Active", type: "Hiking", ops: 3, aid: null, missing: 2, reported: "03 Oct 06:42", coordinator: "Cpt. D. Reeves" },
   { id: "INC-2026-040", title: "Missing Climber – Lover's Leap", location: "Twin Bridges, El Dorado Co.", status: "Active", type: "Climbing", ops: 2, aid: null, missing: 1, reported: "03 Oct 03:15", coordinator: "Lt. S. Nakamura" },
@@ -51,6 +52,7 @@ const incidents = [
   { id: "INC-2026-036", title: "Injured Backcountry Skier – Echo Summit", location: "South Lake Tahoe, El Dorado Co.", status: "Resolved", type: "Skiing", ops: 1, aid: null, missing: 0, reported: "01 Oct 14:22", coordinator: "Cpt. D. Reeves" },
 ];
 
+// Constants for tabs and navigation items
 const TABS = ["All", "Active", "Standby", "Resolved"];
 const openCount = incidents.filter((i) => i.status !== "Resolved").length;
 
@@ -61,6 +63,7 @@ const NAV = [
   { to: "/admin", label: "Admin", icon: "shield" },
 ];
 
+// Component to display the status of an incident with a colored pill
 function StatusPill({ status }) {
   return (
     <span className={`status status-${status.toLowerCase()}`}>
@@ -70,6 +73,7 @@ function StatusPill({ status }) {
   );
 }
 
+// Component to display the number of missing persons, with special styling if there are any
 function Missing({ count }) {
   return (
     <span className={count ? "missing" : "missing none"}>
@@ -206,7 +210,7 @@ export default function IncidentHubLayout() {
           SARLINK
           <span className="brand-tag">EDSAR</span>
         </div>
-
+        {/* header actions + sign out button, no functionality yet, just a placeholder for now */}
         <div className="header-actions">
           <button className="callout-button" aria-label="New Callout">
             <Icon name="plus" size={18} />
@@ -219,7 +223,7 @@ export default function IncidentHubLayout() {
           </button>
         </div>
       </header>
-
+      {/* where sidebar and header are defined, the main content will be rendered here */}
       <aside className="sidebar">
         <nav>
           {NAV.map((n) => (
@@ -239,7 +243,7 @@ export default function IncidentHubLayout() {
           </div>
         </div>
       </aside>
-
+      {/* where sidebar and header are defined, the main content will be rendered here */}
       <main className="main-content">
         <Routes>
           <Route path="/" element={<IncidentOverview />} />
