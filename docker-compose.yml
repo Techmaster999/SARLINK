@@ -2,26 +2,28 @@ services:
   postgres-db:
     image: postgres:16-alpine
     container_name: pern-postgres-dev
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: perndb
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./server/db/migrations:/docker-entrypoint-initdb.d:ro   # NEW: creates tables on first start
 
   api-server:
     build:
-      context: .
+      context: ./server            # CHANGED: build from the server folder (if the Dockerfile lives there)
       dockerfile: Dockerfile
-    container_name: pern-app-dev
     ports:
       - "8888:8888"
     volumes:
-      - ./client:/app          # Links your local client folder to the container's workspace
-      - /app/node_modules      # Keeps container packages completely isolated
+      - ./server:/app              # Links your local server folder to the container
+      - /app/node_modules          # Keeps container packages isolated
+    env_file:
+      - ./server/.env              # NEW: Google, session and other required vars
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://myuser:mypassword@postgres-db:5432/perndb
