@@ -6,7 +6,13 @@
     "dev": "nodemon -L app/src/main.js",
     "server": "nodemon -L app/src/main.js",
     "build": "vite build",
+<<<<<<< HEAD
     "preview": "vite preview"
+=======
+    "preview": "vite preview",
+    "test:sidebar": "node src/components/Sidebar/runSidebarTests.js",
+    "test:auth": "node src/auth/runTests.js"
+>>>>>>> 7fe43dc55f4156413fe4287e7c58595bd52525ca
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
