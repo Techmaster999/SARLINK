@@ -1,6 +1,6 @@
 FROM node:22-alpine AS base
 WORKDIR /app
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@12.11.2 --activate
 
 FROM base AS deps
 COPY package.json ./
