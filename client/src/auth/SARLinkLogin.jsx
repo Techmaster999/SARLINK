@@ -71,7 +71,7 @@ export function SARLinkLogin({ apiBaseUrl = '/api/auth' }) {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/login`, {
+      const response = await axios.post(`${apiBaseUrl}/google`, {
         email,
         password,
       }, {
