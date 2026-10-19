@@ -140,6 +140,17 @@
 .btn-block { width: 100%; }
 .btn-lg { height: 44px; gap: 10px; }
 
+.custom-google-login {
+  position: relative;
+}
+
+.custom-google-login > div {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
 .btn:focus-visible,
 .link:focus-visible {
   outline: 2px solid var(--border-strong);
