@@ -15,7 +15,7 @@ RUN pnpm install --ignore-scripts
 # 5. Copy the rest of the application code from the client folder
 COPY client/ .
 
-EXPOSE 5000
+EXPOSE 8888
 
 # 6. Run the dev script with verification disabled
 CMD ["pnpm", "run", "dev"]
