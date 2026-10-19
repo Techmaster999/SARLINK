@@ -1,4 +1,4 @@
-/* Login page - styles built from the Figma design-system tokens */
+/* Login page - styles built from the design-system tokens (ds.tsx) */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
@@ -120,32 +120,31 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
- 
+
 .btn-primary {
   background: var(--primary);
   color: var(--on-primary);
 }
- 
+
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-primary:active { background: var(--primary-pressed); }
- 
+
 .btn-secondary {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text);
 }
- 
+
 .btn-secondary:hover { background: var(--surface-hover); }
- 
+
 .btn-block { width: 100%; }
 .btn-lg { height: 44px; gap: 10px; }
- 
+
 .btn:focus-visible,
 .link:focus-visible {
   outline: 2px solid var(--border-strong);
   outline-offset: 2px;
 }
-
 
 /* ---------- Form fields ---------- */
 .field {
@@ -176,53 +175,6 @@
 }
 
 .field-input:focus { border-color: var(--border-strong); }
-
-/* ---------- Modal ---------- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.modal {
-  width: 100%;
-  max-width: 400px;
-  padding: 32px;
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.modal-title {
-  color: var(--text);
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.modal-subtitle {
-  margin-top: 2px;
-  color: var(--text-card);
-  font-size: 14px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-}
 
 /* ---------- Brand header ---------- */
 .brand {
@@ -256,6 +208,8 @@
 
 /* ---------- Validation + loading ---------- */
 .login-page { --error: #b42318; }
+
+.login-form .btn-block { margin-top: 8px; }
 
 .form-fields {
   min-width: 0;

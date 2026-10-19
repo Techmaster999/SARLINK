@@ -7,7 +7,7 @@
     "server": "nodemon -L app/src/main.js",
     "build": "vite build",
     "preview": "vite preview",
-    "test:sidebar": "node src/components/Sidebar/runSidebarTests.js"
+    "test:sidebar": "node src/components/Sidebar/runSidebarTests.js",
     "test:auth": "node src/auth/runTests.js"
   },
   "dependencies": {

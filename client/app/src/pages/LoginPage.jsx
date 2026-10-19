@@ -1,35 +1,12 @@
-/* SARLINK IST & Admin sign-in page */
+/* SARLINK IST & Admin sign-in page (React + axios, email + password) */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./LoginPage.css";
 
 // Update these to match your backend
 const LOGIN_ENDPOINT = "/api/auth/login";
-const SUCCESS_REDIRECT = "/hub";
+const SUCCESS_REDIRECT = "/home";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-function GoogleIcon({ size = 20 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path
-        d="M47.532 24.552c0-1.636-.146-3.2-.418-4.698H24.48v8.882h12.982c-.56 3.016-2.26 5.573-4.816 7.29v6.054h7.796c4.558-4.198 7.09-10.386 7.09-17.528z"
-        fill="#4285F4"
-      />
-      <path
-        d="M24.48 48c6.52 0 11.988-2.164 15.984-5.858l-7.796-6.054c-2.162 1.45-4.928 2.306-8.188 2.306-6.3 0-11.634-4.254-13.538-9.972H2.874v6.246C6.854 42.692 15.09 48 24.48 48z"
-        fill="#34A853"
-      />
-      <path
-        d="M10.942 28.422A14.41 14.41 0 0 1 10.2 24c0-1.534.264-3.026.742-4.422v-6.246H2.874A23.988 23.988 0 0 0 .48 24c0 3.87.928 7.532 2.394 10.668l8.068-6.246z"
-        fill="#FBBC05"
-      />
-      <path
-        d="M24.48 9.604c3.554 0 6.74 1.222 9.252 3.622l6.94-6.94C36.462 2.396 30.998 0 24.48 0 15.09 0 6.854 5.308 2.874 13.332l8.068 6.246c1.904-5.718 7.238-9.974 13.538-9.974z"
-        fill="#EA4335"
-      />
-    </svg>
-  );
-}
 
 // SARLINK brand mark (same hexagon used in the app header)
 function BrandMark({ size = 20 }) {
@@ -85,7 +62,6 @@ function getErrorMessage(error) {
 }
 
 export default function LoginPage() {
-  const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -96,20 +72,11 @@ export default function LoginPage() {
   // Cancel any in-flight request if the page unmounts
   useEffect(() => () => controllerRef.current?.abort(), []);
 
-  function closeModal() {
-    if (isLoading) return;
-    setShowModal(false);
-    setEmail("");
-    setPassword("");
-    setFieldErrors({});
-    setFormError("");
-  }
-
   function clearFieldError(name) {
     setFieldErrors((current) => ({ ...current, [name]: undefined }));
     setFormError("");
   }
-  // acceptance criteria: subitting login triggers authentication request
+
   async function handleLoginSubmit(event) {
     event.preventDefault();
     if (isLoading) return;
@@ -138,11 +105,10 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   }
-  // acceptance criteria: form is rendered inside the sign-in.
+
   function renderLoginForm() {
-    // The form is rendered inside the sign-in modal.
     return (
-      <form onSubmit={handleLoginSubmit} noValidate aria-busy={isLoading}>
+      <form className="login-form" onSubmit={handleLoginSubmit} noValidate aria-busy={isLoading}>
         {formError && (
           <div className="form-alert" role="alert">
             {formError}
@@ -179,49 +145,22 @@ export default function LoginPage() {
           />
         </fieldset>
 
-        <div className="modal-actions">
-          <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isLoading}>
-            Cancel
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <span className="btn-spinner" aria-hidden="true" />
-                Signing in…
-              </>
-            ) : (
-              "Next"
-            )}
-          </button>
-        </div>
+        <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <span className="btn-spinner" aria-hidden="true" />
+              Signing in…
+            </>
+          ) : (
+            "Sign in"
+          )}
+        </button>
       </form>
     );
   }
 
   return (
     <main className="login-page">
-      {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Sign in with Google"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="modal-header">
-              <GoogleIcon />
-              <div>
-                <p className="modal-title">Sign in</p>
-                <p className="modal-subtitle">with your Google Account</p>
-              </div>
-            </div>
-
-            {renderLoginForm()}
-          </div>
-        </div>
-      )}
-
       <section className="sign-in-card">
         <div className="brand">
           <span className="brand-mark">
@@ -234,15 +173,12 @@ export default function LoginPage() {
         <h1 className="card-title">SARLINK IST &amp; Admin Sign In</h1>
 
         <p className="card-description">
-          Authorized personnel only. Sign in with your organization Google account.
+          Authorized personnel only. Sign in with your organization email and password.
         </p>
 
         <hr className="divider divider-lg" />
 
-        <button type="button" className="btn btn-primary btn-block btn-lg" onClick={() => setShowModal(true)}>
-          <GoogleIcon />
-          Sign in with Google
-        </button>
+        {renderLoginForm()}
 
         <hr className="divider divider-md" />
 
