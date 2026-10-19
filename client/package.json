@@ -3,16 +3,26 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -L app/src/main.js"
+    "dev": "nodemon -L app/src/main.js",
+    "server": "nodemon -L app/src/main.js",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "@react-oauth/google": "^0.13.5",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.3",
+    "express-session": "^1.19.0",
+    "google-auth-library": "^11.3.0",
     "nodemon": "^3.1.14",
-    "pg": "^8.11.5"
+    "path": "^0.12.7",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "vite": "^6.4.4"
   },
-  "pnpm": {
-    "verifyDepsBeforeRun": false
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4"
   }
 }
