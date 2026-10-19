@@ -1,12 +1,8 @@
 /* SARLINK IST & Admin sign-in page (React + axios, email + password) */
-import { useEffect, useRef, useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { useState } from "react";
 import "./LoginPage.css";
-
-// Update these to match your backend
-const LOGIN_ENDPOINT = "/api/auth/login";
-const SUCCESS_REDIRECT = "/home";
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 // SARLINK brand mark (same hexagon used in the app header)
 function BrandMark({ size = 20 }) {
@@ -18,145 +14,27 @@ function BrandMark({ size = 20 }) {
   );
 }
 
-// Design-system Input: label, field and inline error
-function Input({ id, label, error, ...rest }) {
-  const errorId = `${id}-error`;
-  return (
-    <div className="field">
-      <label className="field-label" htmlFor={id}>
-        {label}
-      </label>
-      <input
-        className="field-input"
-        id={id}
-        aria-invalid={error ? "true" : "false"}
-        aria-describedby={error ? errorId : undefined}
-        {...rest}
-      />
-      {error && (
-        <span className="field-error" id={errorId} role="alert">
-          {error}
-        </span>
-      )}
-    </div>
-  );
-}
-
-// Returns an object of field -> message; empty object means valid
-function validateCredentials(email, password) {
-  const errors = {};
-  if (!email) errors.email = "Email is required.";
-  else if (!EMAIL_PATTERN.test(email)) errors.email = "Enter a valid email address.";
-  if (!password) errors.password = "Password is required.";
-  return errors;
-}
-
-function getErrorMessage(error) {
-  if (error.code === "ECONNABORTED") return "The request timed out. Please try again.";
-  if (!error.response) return "Unable to reach the server. Check your connection and try again.";
-  if (error.response.status === 401 || error.response.status === 403) {
-    return "Invalid email or password.";
-  }
-  if (error.response.status === 429) return "Too many attempts. Please wait and try again.";
-  return error.response.data?.message || "Something went wrong. Please try again.";
-}
-
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const controllerRef = useRef(null);
+  async function handleGoogleSuccess({ credential }) {
+    if (!credential) {
+      setFormError("Google did not return a credential. Please try again.");
+      return;
+    }
 
-  // Cancel any in-flight request if the page unmounts
-  useEffect(() => () => controllerRef.current?.abort(), []);
-
-  function clearFieldError(name) {
-    setFieldErrors((current) => ({ ...current, [name]: undefined }));
     setFormError("");
-  }
-
-  async function handleLoginSubmit(event) {
-    event.preventDefault();
-    if (isLoading) return;
-
-    const trimmedEmail = email.trim();
-    const errors = validateCredentials(trimmedEmail, password);
-    setFieldErrors(errors);
-    setFormError("");
-    if (Object.keys(errors).length > 0) return; // block empty / malformed input
-
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    setIsLoading(true);
-
     try {
       await axios.post(
-        LOGIN_ENDPOINT,
-        { email: trimmedEmail, password },
-        { signal: controller.signal, withCredentials: true, timeout: 15000 }
+        "/api/auth/google",
+        { credential },
+        { withCredentials: true, timeout: 15000 }
       );
-      // Keep the loading state visible while the browser redirects
-      window.location.href = SUCCESS_REDIRECT;
+
+      window.location.href = "/home";
     } catch (error) {
-      if (axios.isCancel(error)) return;
-      setFormError(getErrorMessage(error));
-      setIsLoading(false);
+      console.error("Google sign-in failed:", error);
+      setFormError("Unable to sign in with Google. Please try again.");
     }
-  }
-
-  function renderLoginForm() {
-    return (
-      <form className="login-form" onSubmit={handleLoginSubmit} noValidate aria-busy={isLoading}>
-        {formError && (
-          <div className="form-alert" role="alert">
-            {formError}
-          </div>
-        )}
-
-        <fieldset className="form-fields" disabled={isLoading}>
-          <Input
-            id="login-email"
-            label="Email"
-            type="email"
-            autoComplete="username"
-            placeholder="you@organization.com"
-            value={email}
-            error={fieldErrors.email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-              clearFieldError("email");
-            }}
-            autoFocus
-          />
-          <Input
-            id="login-password"
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            value={password}
-            error={fieldErrors.password}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              clearFieldError("password");
-            }}
-          />
-        </fieldset>
-
-        <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <span className="btn-spinner" aria-hidden="true" />
-              Signing in…
-            </>
-          ) : (
-            "Sign in"
-          )}
-        </button>
-      </form>
-    );
   }
 
   return (
@@ -178,7 +56,24 @@ export default function LoginPage() {
 
         <hr className="divider divider-lg" />
 
-        {renderLoginForm()}
+        {formError && (
+          <div className="form-alert" role="alert">
+            {formError}
+          </div>
+        )}
+
+        <div className="google-login custom-google-login">
+          <button type="button" className="btn btn-primary btn-block btn-lg">
+            Sign in
+          </button>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setFormError("Google sign-in was cancelled or failed.")}
+            useOneTap={false}
+            text="signin"
+            width="100%"
+          />
+        </div>
 
         <hr className="divider divider-md" />
 
