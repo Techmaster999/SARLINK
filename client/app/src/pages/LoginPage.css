@@ -1,4 +1,4 @@
-/* Login page - styles built from the design-system tokens (ds.tsx) */
+/* Login page - styles built from the Figma design-system tokens */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
@@ -120,31 +120,32 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-
+ 
 .btn-primary {
   background: var(--primary);
   color: var(--on-primary);
 }
-
+ 
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-primary:active { background: var(--primary-pressed); }
-
+ 
 .btn-secondary {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text);
 }
-
+ 
 .btn-secondary:hover { background: var(--surface-hover); }
-
+ 
 .btn-block { width: 100%; }
 .btn-lg { height: 44px; gap: 10px; }
-
+ 
 .btn:focus-visible,
 .link:focus-visible {
   outline: 2px solid var(--border-strong);
   outline-offset: 2px;
 }
+
 
 /* ---------- Form fields ---------- */
 .field {
