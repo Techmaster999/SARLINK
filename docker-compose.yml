@@ -18,7 +18,7 @@ services:
       context: ./server            # CHANGED: build from the server folder (if the Dockerfile lives there)
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:5000:5000"
+      - "8888:8888"
     volumes:
       - ./server:/app              # Links your local server folder to the container
       - /app/node_modules          # Keeps container packages isolated
@@ -26,7 +26,8 @@ services:
       - ./server/.env              # NEW: Google, session and other required vars
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgres://myuser:mypassword@postgres-db:5432/perndb   # overrides .env inside Docker
+      - DATABASE_URL=postgres://myuser:mypassword@postgres-db:5432/perndb
+    command: sh -c "pnpm install --ignore-scripts && pnpm run dev"
     depends_on:
       - postgres-db
 
