@@ -1,6 +1,5 @@
 /* Incident creation page */
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import "./IncidentCreation.css";
 
 const INCIDENT_TYPES = ["Hiking", "Climbing", "Water", "Skiing", "Other"];
@@ -111,8 +110,7 @@ function TextAreaField({ id, label, hint, error, ...rest }) {
 }
 
 // Page layout 
-export default function IncidentCreationLayout({ onSubmit }) {
-  const navigate = useNavigate();
+export default function IncidentCreation({ onSubmit }) {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
 
@@ -173,7 +171,7 @@ export default function IncidentCreationLayout({ onSubmit }) {
     if (onSubmit) onSubmit(payload);
     else console.log("New incident", payload);
 
-    navigate("/");
+    window.location.assign("/incident-hub");
   }
 
   // Section content 
@@ -431,9 +429,9 @@ export default function IncidentCreationLayout({ onSubmit }) {
   return (
     <div className="incident-creation">
       <header className="ic-page-header">
-        <Link className="ic-back-link" to="/">
+        <a className="ic-back-link" href="/incident-hub">
           ← Back to incidents
-        </Link>
+        </a>
         <h1 className="ic-title">New incident</h1>
         <p className="ic-subtitle">Create a callout and assign mapping, radio and specialty support.</p>
       </header>
@@ -442,9 +440,9 @@ export default function IncidentCreationLayout({ onSubmit }) {
         <div className="ic-sections">{renderCreationFormSections()}</div>
 
         <div className="ic-actions">
-          <Link className="ic-btn ic-btn--secondary" to="/">
+          <a className="ic-btn ic-btn--secondary" href="/incident-hub">
             Cancel
-          </Link>
+          </a>
           <button type="submit" className="ic-btn ic-btn--primary">
             Create incident
           </button>
