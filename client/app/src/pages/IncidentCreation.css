@@ -4,7 +4,7 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
-/* ---------- Tokens (scoped) ---------- */
+/* Tokens */
 .incident-creation {
   --ic-surface: #ffffff;
   --ic-surface-hover: #f3f4f6;
@@ -42,7 +42,7 @@
   margin: 0;
 }
 
-/* ---------- Page header ---------- */
+/* Page header */
 .ic-page-header {
   display: flex;
   flex-direction: column;
@@ -70,7 +70,7 @@
   font-size: 16px;
 }
 
-/* ---------- Form layout ---------- */
+/* Form layout */
 .ic-form {
   display: flex;
   flex-direction: column;
@@ -90,7 +90,7 @@
   gap: 12px;
 }
 
-/* ---------- Card ---------- */
+/* Card */
 .ic-card {
   display: flex;
   flex-direction: column;
@@ -132,7 +132,7 @@
   gap: 16px;
 }
 
-/* ---------- Badge ---------- */
+/* Badge */
 .ic-badge {
   display: inline-flex;
   flex: none;
@@ -154,7 +154,7 @@
   color: var(--ic-action-label);
 }
 
-/* ---------- Button ---------- */
+/* Button */
 .ic-btn {
   display: inline-flex;
   align-items: center;
@@ -206,7 +206,7 @@
   outline-offset: 2px;
 }
 
-/* ---------- Fields (input, select, textarea) ---------- */
+/* Fields (input, select, textarea) */
 .ic-field {
   display: flex;
   flex-direction: column;
@@ -284,7 +284,7 @@
   font-size: 13px;
 }
 
-/* ---------- Mapping ---------- */
+/* Mapping */
 .ic-map {
   display: flex;
   flex-direction: column;
@@ -302,7 +302,7 @@
 .ic-map__title { font-size: 14px; font-weight: 600; }
 .ic-map__text { color: var(--ic-text-card); font-size: 14px; }
 
-/* ---------- Radio channels ---------- */
+/* Radio channels */
 .ic-channels {
   display: flex;
   flex-direction: column;
@@ -324,7 +324,7 @@
   text-transform: uppercase;
 }
 
-/* ---------- Specialty team options ---------- */
+/* Specialty team options */
 .ic-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -363,7 +363,7 @@
   outline-offset: 2px;
 }
 
-/* ---------- Narrow screens ---------- */
+/* Narrow screens */
 @media (max-width: 1000px) {
   .ic-sections { grid-template-columns: minmax(0, 1fr); }
 }
