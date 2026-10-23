@@ -33,6 +33,49 @@ export const DEFAULT_NAV_ITEMS = [
   }
 ];
 
+export const INCIDENT_NAV_ITEMS = [
+  {
+    id: 'incidents',
+    label: 'Incidents',
+    path: '/incident-hub',
+    icon: 'fire',
+    requiresAdmin: false,
+    description: 'Overview of ongoing and resolved incidents'
+  },
+  {
+    id: 'map',
+    label: 'Area Map',
+    path: '/incident-hub/map',
+    icon: 'map',
+    requiresAdmin: false,
+    description: 'View the incident area map'
+  },
+  {
+    id: 'forms',
+    label: 'Forms',
+    path: '/incident-hub/forms',
+    icon: 'document',
+    requiresAdmin: false,
+    description: 'Operational forms and field reports'
+  },
+  {
+    id: 'admin',
+    label: 'Admin',
+    path: '/incident-hub/admin',
+    icon: 'shield',
+    requiresAdmin: false,
+    description: 'System administration'
+  },
+  {
+    id: 'new-incident',
+    label: 'New Incident',
+    path: '/incident-creation',
+    icon: 'plus',
+    requiresAdmin: false,
+    description: 'Create a new incident'
+  }
+];
+
 /**
  * Subtask Function: checkAdminRole
  * 

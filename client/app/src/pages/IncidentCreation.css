@@ -4,6 +4,21 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
+.incident-creation-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.incident-creation-layout > .sarlink-sidebar {
+  width: auto;
+}
+
+.incident-creation-content {
+  min-width: 0;
+  padding: 32px;
+}
+
 /* Tokens */
 .incident-creation {
   --ic-surface: #ffffff;

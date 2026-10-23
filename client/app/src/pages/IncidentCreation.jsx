@@ -1,5 +1,7 @@
 /* Incident creation page */
 import { useState } from "react";
+import Sidebar from "../../../src/components/Sidebar/Sidebar.jsx";
+import { INCIDENT_NAV_ITEMS } from "../../../src/components/Sidebar/sidebarNavData.js";
 import "./IncidentCreation.css";
 
 const INCIDENT_TYPES = ["Hiking", "Climbing", "Water", "Skiing", "Other"];
@@ -427,27 +429,32 @@ export default function IncidentCreation({ onSubmit }) {
   }
 
   return (
-    <div className="incident-creation">
-      <header className="ic-page-header">
-        <a className="ic-back-link" href="/incident-hub">
-          ← Back to incidents
-        </a>
-        <h1 className="ic-title">New incident</h1>
-        <p className="ic-subtitle">Create a callout and assign mapping, radio and specialty support.</p>
-      </header>
+    <div className="incident-creation-layout">
+      <Sidebar currentPath={window.location.pathname} navItems={INCIDENT_NAV_ITEMS} />
+      <main className="incident-creation-content">
+        <div className="incident-creation">
+          <header className="ic-page-header">
+            <a className="ic-back-link" href="/incident-hub">
+              ← Back to incidents
+            </a>
+            <h1 className="ic-title">New incident</h1>
+            <p className="ic-subtitle">Create a callout and assign mapping, radio and specialty support.</p>
+          </header>
 
-      <form className="ic-form" onSubmit={handleSubmit} noValidate>
-        <div className="ic-sections">{renderCreationFormSections()}</div>
+          <form className="ic-form" onSubmit={handleSubmit} noValidate>
+            <div className="ic-sections">{renderCreationFormSections()}</div>
 
-        <div className="ic-actions">
-          <a className="ic-btn ic-btn--secondary" href="/incident-hub">
-            Cancel
-          </a>
-          <button type="submit" className="ic-btn ic-btn--primary">
-            Create incident
-          </button>
+            <div className="ic-actions">
+              <a className="ic-btn ic-btn--secondary" href="/incident-hub">
+                Cancel
+              </a>
+              <button type="submit" className="ic-btn ic-btn--primary">
+                Create incident
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </main>
     </div>
   );
 }

@@ -23,7 +23,7 @@ button { font: inherit; cursor: pointer; }
 /* ---------- Shell ---------- */
 .incident-hub {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 260px 1fr;
   grid-template-rows: 64px 1fr;
   min-height: 100vh;
 }
@@ -47,17 +47,7 @@ button { font: inherit; cursor: pointer; }
 .callout-button { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 0; border-radius: 6px; background: var(--navy); color: #fff; font-size: 15px; font-weight: 500; }
 .signout { display: inline-flex; align-items: center; gap: 8px; border: 0; background: none; color: var(--muted); font-size: 15px; }
 
-.sidebar { display: flex; flex-direction: column; padding: 24px 12px 16px; background: var(--surface); border-right: 1px solid var(--border); }
-.sidebar nav { display: flex; flex-direction: column; gap: 4px; }
-.nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: var(--muted); font-size: 15px; font-weight: 500; text-decoration: none; }
-.nav-link:hover { background: var(--soft); }
-.nav-link.active { background: var(--navy); color: #fff; }
-.nav-badge { display: grid; place-items: center; min-width: 22px; height: 22px; margin-left: auto; border-radius: 11px; background: #fff; color: var(--navy); font-size: 12px; font-weight: 600; }
-
-.user-card { display: flex; align-items: center; gap: 10px; margin-top: auto; padding: 12px; border-radius: 8px; background: var(--soft); }
-.avatar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 13px; font-weight: 600; }
-.user-name { font-size: 14px; font-weight: 600; }
-.user-role { color: var(--muted); font-size: 12px; }
+.incident-hub > .sarlink-sidebar { grid-column: 1; grid-row: 2; width: auto; min-height: calc(100vh - 64px); }
 
 .main-content { min-width: 0; padding: 32px; }
 .page { display: flex; flex-direction: column; gap: 24px; max-width: 1368px; }

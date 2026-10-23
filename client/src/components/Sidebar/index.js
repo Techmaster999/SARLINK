@@ -13,5 +13,6 @@ export {
   checkAdminRole,
   isUserAdmin,
   DEFAULT_NAV_ITEMS,
+  INCIDENT_NAV_ITEMS,
 } from './sidebarNavData.js';
 export { SidebarDemo } from './SidebarDemo.jsx';

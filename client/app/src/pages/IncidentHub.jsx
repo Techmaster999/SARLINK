@@ -1,6 +1,8 @@
 /* Incident Hub - SARLINK search & rescue incident dashboard */
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Sidebar from "../../../src/components/Sidebar/Sidebar.jsx";
+import { INCIDENT_NAV_ITEMS } from "../../../src/components/Sidebar/sidebarNavData.js";
 import "./IncidentHub.css";
 
 // Inline icons (Lucide-style paths) so no extra dependency is needed
@@ -51,13 +53,6 @@ const sum = (list, key) => list.reduce((total, i) => total + (Number(i[key]) || 
 
 // The hub lives under this path (see main.jsx)
 const BASE_PATH = "/incident-hub";
-
-const NAV = [
-  { to: BASE_PATH, label: "Incidents", icon: "alert" },
-  { to: `${BASE_PATH}/map`, label: "Area Map", icon: "map" },
-  { to: `${BASE_PATH}/forms`, label: "Forms", icon: "file" },
-  { to: `${BASE_PATH}/admin`, label: "Admin", icon: "shield" },
-];
 
 function StatusPill({ status }) {
   return (
@@ -245,7 +240,11 @@ export default function IncidentHubLayout() {
 
   // The sidebar badge follows the loaded data
   const openCount = countOpen(incidents);
-  const nav = NAV.map((n) => (n.to === BASE_PATH ? { ...n, badge: openCount } : n));
+  const navItems = INCIDENT_NAV_ITEMS.map((item) =>
+    item.id === "incidents" && openCount > 0
+      ? { ...item, badge: String(openCount) }
+      : item
+  );
 
   return (
     <div className="incident-hub">
@@ -269,30 +268,7 @@ export default function IncidentHubLayout() {
         </div>
       </header>
 
-      <aside className="sidebar">
-        <nav>
-          {nav.map((n) => (
-            <a
-              key={n.to}
-              href={n.to}
-              className={n.to === path ? "nav-link active" : "nav-link"}
-              aria-current={n.to === path ? "page" : undefined}
-            >
-              <Icon name={n.icon} />
-              {n.label}
-              {n.badge > 0 && <span className="nav-badge">{n.badge}</span>}
-            </a>
-          ))}
-        </nav>
-
-        <div className="user-card">
-          <span className="avatar">DR</span>
-          <div>
-            <p className="user-name">Cpt. D. Reeves</p>
-            <p className="user-role">Operations Lead</p>
-          </div>
-        </div>
-      </aside>
+      <Sidebar currentPath={path} navItems={navItems} />
 
       <main className="main-content">
         {renderPage()}
