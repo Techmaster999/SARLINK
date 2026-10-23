@@ -1,6 +1,6 @@
 /* Incident Hub - SARLINK search & rescue incident dashboard */
-import { useState } from "react";
-import { NavLink, Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import "./IncidentHub.css";
 
 // Inline icons (Lucide-style paths) so no extra dependency is needed
@@ -41,24 +41,22 @@ function Icon({ name, size = 18 }) {
   );
 }
 
-// Sample data
-const incidents = [
-  { id: "INC-2026-041", title: "Lost Hikers – Desolation Wilderness", location: "Desolation Wilderness, El Dorado Co.", status: "Active", type: "Hiking", ops: 3, aid: null, missing: 2, reported: "03 Oct 06:42", coordinator: "Cpt. D. Reeves" },
-  { id: "INC-2026-040", title: "Missing Climber – Lover's Leap", location: "Twin Bridges, El Dorado Co.", status: "Active", type: "Climbing", ops: 2, aid: null, missing: 1, reported: "03 Oct 03:15", coordinator: "Lt. S. Nakamura" },
-  { id: "INC-2026-039", title: "Overdue Kayakers – American River", location: "Coloma, El Dorado Co.", status: "Active", type: "Water", ops: 2, aid: "Placer", missing: 4, reported: "02 Oct 22:10", coordinator: "Cpt. M. Torres" },
-  { id: "INC-2026-038", title: "Overdue Trail Runner – Mount Tallac", location: "Georgetown, El Dorado Co.", status: "Standby", type: "Hiking", ops: 1, aid: null, missing: 1, reported: "02 Oct 18:30", coordinator: "Sgt. K. Wallace" },
-  { id: "INC-2026-037", title: "Overdue Family Hike – Ice House Reservoir", location: "Ice House Reservoir, El Dorado Co.", status: "Resolved", type: "Hiking", ops: 2, aid: null, missing: 0, reported: "02 Oct 09:00", coordinator: "Lt. A. Chen" },
-  { id: "INC-2026-036", title: "Injured Backcountry Skier – Echo Summit", location: "South Lake Tahoe, El Dorado Co.", status: "Resolved", type: "Skiing", ops: 1, aid: null, missing: 0, reported: "01 Oct 14:22", coordinator: "Cpt. D. Reeves" },
-];
+// Incidents are loaded from the API. Each item is expected to look like:
+// { id, title, location, status, type, ops, aid, missing, reported, coordinator }
+const INCIDENTS_ENDPOINT = "/api/incidents";
 
 const TABS = ["All", "Active", "Standby", "Resolved"];
-const openCount = incidents.filter((i) => i.status !== "Resolved").length;
+const countOpen = (list) => list.filter((i) => i.status !== "Resolved").length;
+const sum = (list, key) => list.reduce((total, i) => total + (Number(i[key]) || 0), 0);
+
+// The hub lives under this path (see main.jsx)
+const BASE_PATH = "/incident-hub";
 
 const NAV = [
-  { to: "/", label: "Incidents", icon: "alert", badge: openCount },
-  { to: "/map", label: "Area Map", icon: "map" },
-  { to: "/forms", label: "Forms", icon: "file" },
-  { to: "/admin", label: "Admin", icon: "shield" },
+  { to: BASE_PATH, label: "Incidents", icon: "alert" },
+  { to: `${BASE_PATH}/map`, label: "Area Map", icon: "map" },
+  { to: `${BASE_PATH}/forms`, label: "Forms", icon: "file" },
+  { to: `${BASE_PATH}/admin`, label: "Admin", icon: "shield" },
 ];
 
 function StatusPill({ status }) {
@@ -79,15 +77,17 @@ function Missing({ count }) {
   );
 }
 
-function IncidentOverview() {
+function IncidentOverview({ incidents, isLoading, error }) {
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
 
+  const resolvedCount = incidents.filter((i) => i.status === "Resolved").length;
+
   const kpis = [
-    { label: "Open Incidents", value: openCount, detail: "2 resolved today", icon: "alert" },
-    { label: "Operational Periods", value: incidents.reduce((n, i) => n + i.ops, 0), detail: "Across all incidents", icon: "calendar" },
+    { label: "Open Incidents", value: countOpen(incidents), detail: `${resolvedCount} resolved`, icon: "alert" },
+    { label: "Operational Periods", value: sum(incidents, "ops"), detail: "Across all incidents", icon: "calendar" },
     { label: "Mutual Aid", value: incidents.filter((i) => i.aid).length, detail: "Open out-of-county searches", icon: "aid" },
-    { label: "Persons Missing", value: incidents.reduce((n, i) => n + i.missing, 0), detail: "Pending recovery", icon: "user", danger: true },
+    { label: "Persons Missing", value: sum(incidents, "missing"), detail: "Pending recovery", icon: "user", danger: true },
   ];
 
   const q = query.trim().toLowerCase();
@@ -183,7 +183,13 @@ function IncidentOverview() {
           ))}
         </div>
 
-        {visible.length === 0 && <p className="empty">No incidents match your filters.</p>}
+        {isLoading && <p className="empty">Loading incidents…</p>}
+        {!isLoading && error && <p className="empty empty-error" role="alert">{error}</p>}
+        {!isLoading && !error && visible.length === 0 && (
+          <p className="empty">
+            {incidents.length === 0 ? "No incidents yet." : "No incidents match your filters."}
+          </p>
+        )}
       </section>
     </div>
   );
@@ -198,6 +204,49 @@ function Placeholder({ title }) {
 }
 
 export default function IncidentHubLayout() {
+  const [incidents, setIncidents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    axios
+      .get(INCIDENTS_ENDPOINT, { signal: controller.signal, withCredentials: true })
+      .then((res) => setIncidents(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => {
+        if (axios.isCancel(err)) return;
+        setLoadError("Unable to load incidents. Please try again.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  // Current page, read straight from the URL (no router)
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+
+  function renderPage() {
+    switch (path) {
+      case BASE_PATH:
+        return <IncidentOverview incidents={incidents} isLoading={isLoading} error={loadError} />;
+      case `${BASE_PATH}/map`:
+        return <Placeholder title="Area Map" />;
+      case `${BASE_PATH}/forms`:
+        return <Placeholder title="Forms" />;
+      case `${BASE_PATH}/admin`:
+        return <Placeholder title="Admin" />;
+      default:
+        return <Placeholder title="Page not found" />;
+    }
+  }
+
+  // The sidebar badge follows the loaded data
+  const openCount = countOpen(incidents);
+  const nav = NAV.map((n) => (n.to === BASE_PATH ? { ...n, badge: openCount } : n));
+
   return (
     <div className="incident-hub">
       <header className="header">
@@ -222,12 +271,17 @@ export default function IncidentHubLayout() {
 
       <aside className="sidebar">
         <nav>
-          {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end className="nav-link">
+          {nav.map((n) => (
+            <a
+              key={n.to}
+              href={n.to}
+              className={n.to === path ? "nav-link active" : "nav-link"}
+              aria-current={n.to === path ? "page" : undefined}
+            >
               <Icon name={n.icon} />
               {n.label}
-              {n.badge && <span className="nav-badge">{n.badge}</span>}
-            </NavLink>
+              {n.badge > 0 && <span className="nav-badge">{n.badge}</span>}
+            </a>
           ))}
         </nav>
 
@@ -241,12 +295,7 @@ export default function IncidentHubLayout() {
       </aside>
 
       <main className="main-content">
-        <Routes>
-          <Route path="/" element={<IncidentOverview />} />
-          <Route path="/map" element={<Placeholder title="Area Map" />} />
-          <Route path="/forms" element={<Placeholder title="Forms" />} />
-          <Route path="/admin" element={<Placeholder title="Admin" />} />
-        </Routes>
+        {renderPage()}
       </main>
     </div>
   );
