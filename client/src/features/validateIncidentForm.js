@@ -8,7 +8,7 @@ const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
 const optionalText = (max, label) =>
     z.string().trim().max(max, `${label} must be ${max} characters or fewer.`);
 
-export function createIncidentSchema({ teamIDs } = {}) {
+export function createIncidentSchema({ teamIds } = {}) {
     const validTeamIds = teamIds ? new Set(teamIds) : null;
 
     return z.object({
@@ -59,3 +59,26 @@ function crossFieldErrors(values) {
     }
     return errors;
 }
+
+export function validateIncidentForm(values, { teams } = {}) {
+    const schema = createIncidentSchema({ teamIds: teams?.map((t) => t.id) });
+    const result = schema.safeParse(values);
+    const errors = {};
+
+    if (!result.success) {
+        for (const issue of result.error.issues) {
+            const field = String(issue.path[0] ?? "root");
+
+            if (!errors[field]) errors[field] = { type: issue.code, message: issue.message };
+        }
+    }
+
+    for (const [field, err] of Object.entries(crossFieldErrors(value))) {
+        if (!errors[field]) errors[field] = err;
+    }
+
+    const data = { ...result.data };
+    if (!data.mutualAid) data.mutualAidCounty = "";
+    return { success: true, data, errors: {} };
+}
+
