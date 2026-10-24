@@ -1,0 +1,185 @@
+/* Incident creation page - header plus one white card per section.
+   Scoped to .incident-creation so it doesn't affect IncidentHub or LoginPage. */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+.incident-creation {
+  --ic-surface: #ffffff;
+  --ic-surface-hover: #f3f4f6;
+  --ic-text: #0a0a0a;
+  --ic-text-card: #5b6470;
+  --ic-text-page: #3a4250;
+  --ic-border: #d5d9df;
+  --ic-radius-sm: 6px;
+  --ic-radius-md: 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--ic-text);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.incident-creation *,
+.incident-creation *::before,
+.incident-creation *::after {
+  box-sizing: border-box;
+}
+
+.incident-creation h1,
+.incident-creation h2,
+.incident-creation h3,
+.incident-creation p {
+  margin: 0;
+}
+
+/* Page header */
+.ic-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ic-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ic-text-page);
+  font-size: 14px;
+}
+
+.ic-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ic-title {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ic-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--ic-border);
+  border-radius: var(--ic-radius-sm);
+  background: var(--ic-surface-hover);
+  color: var(--ic-text-card);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.ic-subtitle {
+  color: var(--ic-text-page);
+  font-size: 16px;
+}
+
+/* Header with return button */
+.ic-page .sarlink-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid #d5d9df;
+  background: #ffffff;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.ic-page .sarlink-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ic-page .sarlink-header-logo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #0b2a5b;
+  color: #ffffff;
+}
+
+.ic-page .sarlink-header-logo-mark { width: 20px; height: 20px; }
+
+.ic-page .sarlink-header-name { font-size: 20px; font-weight: 600; }
+
+.ic-page .sarlink-header-agency {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #0b2a5b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ic-page .sarlink-header-actions { display: flex; align-items: center; gap: 8px; }
+
+.ic-page .sarlink-header-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d5d9df;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #5b6470;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ic-page .sarlink-header-button:hover { background: #f3f4f6; }
+
+.ic-page .sarlink-header-button-icon { display: flex; }
+.ic-page .sarlink-header-button-icon svg { width: 16px; height: 16px; }
+
+/* Form: one white card per section, stacked */
+.ic-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ic-card {
+  padding: 24px;
+  border: 1px solid var(--ic-border);
+  border-radius: var(--ic-radius-md);
+  background: var(--ic-surface);
+}
+
+.ic-card__title {
+  color: var(--ic-text-card);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+@media (max-width: 600px) {
+  .ic-title { font-size: 28px; }
+  .ic-card { padding: 20px 16px; }
+}
+
+/* Page shell */
+.ic-page {
+  min-height: 100vh;
+  background: #c4cad4; /* page background token */
+}
+
+.ic-main {
+  padding: 32px 16px;
+}

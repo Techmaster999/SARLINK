@@ -5,6 +5,7 @@ import {GoogleOAuthProvider} from '@react-oauth/google'
 import LoginPage from './LoginPage'
 import HomePage from './HomePage'
 import IncidentHub from './IncidentHub'
+import IncidentCreationLayout from './IncidentCreation'
 
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_CLIENT_ID
@@ -16,7 +17,9 @@ const page =
     ? <HomePage />
     : isIncidentHubPath
       ? <IncidentHub />
-      : <LoginPage />
+    : pathname === '/switchboard--callout'
+    ? <IncidentCreationLayout />
+    : <LoginPage />
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
