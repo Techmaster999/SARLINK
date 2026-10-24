@@ -17,7 +17,7 @@ const page =
     ? <HomePage />
     : isIncidentHubPath
       ? <IncidentHub />
-    : pathname === '/incident-callout'
+    : pathname === '/switchboard--callout'
     ? <IncidentCreationLayout />
     : <LoginPage />
 

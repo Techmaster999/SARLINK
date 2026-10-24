@@ -1,6 +1,9 @@
 /* Incident creation page */
 import { Header } from "../../../src/components/header/index.js";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import "./IncidentCreation.css";
+import { BrowserRouter } from "react-router-dom";
 
 /* header and section cards only, no form fields yet
 acceptance critera: IncidentCreationLayout() */
@@ -44,8 +47,10 @@ export default function IncidentCreationLayout() {
   return (
     <div className="ic-page">
       {/* Header component */ }
-      <Header /> 
-
+      <BrowserRouter>
+        <Header /> 
+      </BrowserRouter>
+      
       <main className="ic-main">
         <div className="incident-creation">
           <header className="ic-header">
