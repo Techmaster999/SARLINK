@@ -48,4 +48,14 @@ export function createIncidentSchema({ teamIDs } = {}) {
     });
 }
 
-
+function crossFieldErrors(values) {
+    const errors = {};
+    if (values?.mutualAid) {
+        if(!values?.mutualAidCounty) {
+            errors.mutualAidCounty = { type: "required", message: "Select the requesting county." };
+        } else if (!COUNTY_VALUES.has(values.mutualAidCounty)) {
+            errors.mutualAidCounty = { type: "invalid", message: "Select a county from the list." };
+        }
+    }
+    return errors;
+}
