@@ -1,29 +1,231 @@
 /* Incident creation page */
 //import { Header } from "../../../src/components/header/index.js";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import axios from "axios";
 import "./IncidentCreation.css";
 import { BrowserRouter } from "react-router-dom";
 
+/**
+ * Handles basic info input changes.
+ * Accepts an event object or (name, value) pair and an optional callback/setter.
+ */
+export function handleBasicInfoChange(eventOrName, valueOrSetter) {
+  if (eventOrName && eventOrName.target) {
+    const { name, value } = eventOrName.target;
+    if (typeof valueOrSetter === "function") {
+      valueOrSetter(name, value);
+    }
+    return { name, value };
+  }
+  if (typeof eventOrName === "string") {
+    const name = eventOrName;
+    const value = valueOrSetter;
+    return { name, value };
+  }
+  return undefined;
+}
+
+/**
+ * BasicInfoFormSection
+ * Acceptance criteria: textboxes with placeholder text for:
+ * Name, ID, Date, Location, Coordinator, Personnel
+ * Emulates the SARLINK Figma design layout and tokens.
+ */
+export function BasicInfoFormSection({
+  register: externalRegister,
+  handleBasicInfoChange: customHandleChange,
+  errors = {},
+  defaultValues = {},
+}) {
+  const localForm = useForm({
+    defaultValues: {
+      name: "",
+      id: "",
+      date: "",
+      location: "",
+      coordinator: "",
+      personnel: "",
+      ...defaultValues,
+    },
+  });
+
+  const register = externalRegister || localForm.register;
+  const onChangeHandler = customHandleChange || handleBasicInfoChange;
+
+  return (
+    <section className="ic-card" key="basic-info" aria-labelledby="basic-info-title">
+      <h2 className="ic-card__title" id="basic-info-title">
+        Basic info
+      </h2>
+      <div className="ic-card__content">
+        {/* Incident Name */}
+        <div className="ic-field">
+          <label className="ic-field__label" htmlFor="basic-info-name">
+            Incident Name
+          </label>
+          <input
+            id="basic-info-name"
+            type="text"
+            placeholder="e.g. Lost Hiker – Mt. Hood"
+            className="ic-field__input"
+            {...register("name", {
+              onChange: (e) => onChangeHandler(e),
+            })}
+          />
+          {errors?.name && (
+            <p className="ic-field__error">{errors.name.message || errors.name}</p>
+          )}
+        </div>
+
+        {/* Case ID Number & Date / Time */}
+        <div className="ic-form-row">
+          <div className="ic-field">
+            <label className="ic-field__label" htmlFor="basic-info-id">
+              Case ID Number
+            </label>
+            <input
+              id="basic-info-id"
+              type="text"
+              placeholder="e.g. SAR-2026-0412"
+              className="ic-field__input"
+              {...register("id", {
+                onChange: (e) => onChangeHandler(e),
+              })}
+            />
+            {errors?.id && (
+              <p className="ic-field__error">{errors.id.message || errors.id}</p>
+            )}
+          </div>
+
+          <div className="ic-field">
+            <label className="ic-field__label" htmlFor="basic-info-date">
+              Date / Time
+            </label>
+            <input
+              id="basic-info-date"
+              type="text"
+              placeholder="e.g. 2026-10-24 14:00"
+              className="ic-field__input"
+              {...register("date", {
+                onChange: (e) => onChangeHandler(e),
+              })}
+            />
+            {errors?.date && (
+              <p className="ic-field__error">{errors.date.message || errors.date}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="ic-field">
+          <label className="ic-field__label" htmlFor="basic-info-location">
+            Location
+          </label>
+          <input
+            id="basic-info-location"
+            type="text"
+            placeholder="Address or grid coordinates"
+            className="ic-field__input"
+            {...register("location", {
+              onChange: (e) => onChangeHandler(e),
+            })}
+          />
+          {errors?.location && (
+            <p className="ic-field__error">{errors.location.message || errors.location}</p>
+          )}
+        </div>
+
+        {/* Coordinator & Personnel */}
+        <div className="ic-form-row">
+          <div className="ic-field">
+            <label className="ic-field__label" htmlFor="basic-info-coordinator">
+              Coordinator
+            </label>
+            <input
+              id="basic-info-coordinator"
+              type="text"
+              placeholder="Full name"
+              className="ic-field__input"
+              {...register("coordinator", {
+                onChange: (e) => onChangeHandler(e),
+              })}
+            />
+            {errors?.coordinator && (
+              <p className="ic-field__error">{errors.coordinator.message || errors.coordinator}</p>
+            )}
+          </div>
+
+          <div className="ic-field">
+            <label className="ic-field__label" htmlFor="basic-info-personnel">
+              Personnel on Duty
+              <span className="ic-field__hint">(optional)</span>
+            </label>
+            <input
+              id="basic-info-personnel"
+              type="text"
+              placeholder="Names or count"
+              className="ic-field__input"
+              {...register("personnel", {
+                onChange: (e) => onChangeHandler(e),
+              })}
+            />
+            {errors?.personnel && (
+              <p className="ic-field__error">{errors.personnel.message || errors.personnel}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* header and section cards only, no form fields yet
 acceptance critera: IncidentCreationLayout() */
 export default function IncidentCreationLayout() {
+  const {
+    register,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      name: "",
+      id: "",
+      date: "",
+      location: "",
+      coordinator: "",
+      personnel: "",
+    },
+  });
+
   /* acceptance criteria: renderCreationFormSections() */
   function renderCreationFormSections() {
     const sections = [
-    { id: "basic-info", title: "Basic info" },
-    { id: "mapping", title: "Mapping" },
-    { id: "radio-channels", title: "Radio channels" },
-    { id: "teams-called", title: "Teams called" },
+      { id: "basic-info", title: "Basic info" },
+      { id: "mapping", title: "Mapping" },
+      { id: "radio-channels", title: "Radio channels" },
+      { id: "teams-called", title: "Teams called" },
     ];
 
-    return sections.map((section) => (
-      <section className="ic-card" key={section.id} aria-labelledby={`${section.id}-title`}>
-        <h2 className="ic-card__title" id={`${section.id}-title`}>
-          {section.title}
-        </h2>
-      </section>
-    ));
+    return sections.map((section) => {
+      if (section.id === "basic-info") {
+        return (
+          <BasicInfoFormSection
+            key={section.id}
+            register={register}
+            handleBasicInfoChange={handleBasicInfoChange}
+            errors={errors}
+          />
+        );
+      }
+
+      return (
+        <section className="ic-card" key={section.id} aria-labelledby={`${section.id}-title`}>
+          <h2 className="ic-card__title" id={`${section.id}-title`}>
+            {section.title}
+          </h2>
+        </section>
+      );
+    });
   }
 
   return (

@@ -169,9 +169,76 @@
   text-transform: uppercase;
 }
 
+/* Basic Info form fields */
+.ic-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ic-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ic-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.ic-field__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ic-text);
+  font-family: inherit;
+}
+
+.ic-field__hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ic-text-card);
+}
+
+.ic-field__input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ic-border);
+  border-radius: var(--ic-radius-sm);
+  background-color: var(--ic-surface);
+  color: var(--ic-text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.1s ease;
+}
+
+.ic-field__input:focus {
+  border-color: #0a0a0a;
+}
+
+.ic-field__input::placeholder {
+  color: #5b6470;
+}
+
+.ic-field__error {
+  margin: 0;
+  font-size: 13px;
+  color: #b42318;
+}
+
 @media (max-width: 600px) {
   .ic-title { font-size: 28px; }
   .ic-card { padding: 20px 16px; }
+  .ic-form-row { grid-template-columns: 1fr; }
 }
 
 /* Page shell */
