@@ -1,5 +1,5 @@
 /* Incident creation page */
-import { Header } from "../../../src/components/header/index.js";
+//import { Header } from "../../../src/components/header/index.js";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./IncidentCreation.css";
@@ -27,11 +27,51 @@ export default function IncidentCreationLayout() {
   }
 
   return (
-    <div className="ic-page">
-      {/* Header component */ }
-      <BrowserRouter>
-        <Header /> 
-      </BrowserRouter>
+        <div className="ic-page">
+      <header className="sarlink-header">
+        <div className="sarlink-header-brand" aria-label="SARLINK EDSAR">
+          <span className="sarlink-header-logo">
+            <svg className="sarlink-header-logo-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
+            </svg>
+          </span>
+          <span className="sarlink-header-name">SARLINK</span>
+          <span className="sarlink-header-agency">EDSAR</span>
+        </div>
+
+        <div className="sarlink-header-actions">
+          <button
+            type="button"
+            className="sarlink-header-button sarlink-header-button-secondary"
+            onClick={() => window.location.assign("/incident-hub")}
+            aria-label="Return"
+          >
+            <span className="sarlink-header-button-icon">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M13 3h2.5A1.5 1.5 0 0 1 17 4.5v11a1.5 1.5 0 0 1-1.5 1.5H13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                <path d="m7 6-4 4 4 4M3 10h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="sarlink-header-button-label">Return</span>
+          </button>
+
+          {/* Sign-out behavior is left for the authentication work */}
+          <button
+            type="button"
+            className="sarlink-header-button sarlink-header-button-secondary"
+            aria-label="Sign out"
+          >
+            <span className="sarlink-header-button-icon">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M7 3H4.5A1.5 1.5 0 0 0 3 4.5v11A1.5 1.5 0 0 0 4.5 17H7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                <path d="m13 6 4 4-4 4M17 10H7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="sarlink-header-button-label">Sign Out</span>
+          </button>
+        </div>
+      </header>
       
       <main className="ic-main">
         <div className="incident-creation">

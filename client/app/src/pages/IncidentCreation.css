@@ -82,6 +82,70 @@
   font-size: 16px;
 }
 
+/* Header with return button */
+.ic-page .sarlink-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid #d5d9df;
+  background: #ffffff;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.ic-page .sarlink-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ic-page .sarlink-header-logo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #0b2a5b;
+  color: #ffffff;
+}
+
+.ic-page .sarlink-header-logo-mark { width: 20px; height: 20px; }
+
+.ic-page .sarlink-header-name { font-size: 20px; font-weight: 600; }
+
+.ic-page .sarlink-header-agency {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #0b2a5b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ic-page .sarlink-header-actions { display: flex; align-items: center; gap: 8px; }
+
+.ic-page .sarlink-header-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d5d9df;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #5b6470;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ic-page .sarlink-header-button:hover { background: #f3f4f6; }
+
+.ic-page .sarlink-header-button-icon { display: flex; }
+.ic-page .sarlink-header-button-icon svg { width: 16px; height: 16px; }
+
 /* Form: one white card per section, stacked */
 .ic-form {
   display: flex;
