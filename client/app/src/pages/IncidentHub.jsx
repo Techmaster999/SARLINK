@@ -105,7 +105,7 @@ function formatReportedAt(value) {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date);
+  }).format(date).replace(",", "");
 }
 
 function StatCard({ label, value, detail, icon, danger = false }) {
@@ -178,7 +178,7 @@ function IncidentQuickView({ incidents }) {
       <section className="incidents-card">
         <div className="card-head">
           <h2 className="card-title">
-            Incidents <span className="count">{incidents.length}</span>
+            Incidents <span className="count">{visible.length}</span>
           </h2>
           <label className="search">
             <Icon name="search" size={16} />
@@ -212,13 +212,12 @@ function IncidentQuickView({ incidents }) {
             <thead>
               <tr>
                 <th scope="col">Incident ID</th>
-                <th scope="col">Incident name</th>
+                <th scope="col">Incident</th>
                 <th scope="col">Status</th>
-                <th scope="col">Location</th>
                 <th scope="col">Type</th>
-                <th scope="col">Operational periods</th>
-                <th scope="col">Mutual aid county</th>
-                <th scope="col">Missing persons</th>
+                <th scope="col">OPs</th>
+                <th scope="col">Mutual Aid</th>
+                <th scope="col">Missing</th>
                 <th scope="col">Reported</th>
                 <th scope="col">Coordinator</th>
               </tr>
@@ -227,12 +226,14 @@ function IncidentQuickView({ incidents }) {
               {visible.map((incident, index) => (
                 <tr className="incident-row" key={incident?.id ?? index}>
                   <td className="incident-id">{displayValue(incident?.id)}</td>
-                  <td className="incident-name"><strong>{displayValue(incident?.name)}</strong></td>
+                  <td className="incident-name">
+                    <strong>{displayValue(incident?.name)}</strong>
+                    <small>{displayValue(incident?.location)}</small>
+                  </td>
                   <td><StatusPill status={incident?.status} /></td>
-                  <td>{displayValue(incident?.location)}</td>
                   <td>{displayValue(incident?.type)}</td>
                   <td>{displayNumber(incident?.operationalPeriods)}</td>
-                  <td>{displayValue(incident?.mutualAidCounty)}</td>
+                  <td>{incident?.mutualAid ? displayValue(incident?.mutualAidCounty) : DASH}</td>
                   <td><Missing count={incident?.missingPersons} /></td>
                   <td className="reported">
                     <Icon name="clock" size={15} />
@@ -246,26 +247,39 @@ function IncidentQuickView({ incidents }) {
         </div>
 
         <div className="incident-cards">
-          {visible.map((incident, index) => (
-            <article className="incident-card" key={incident?.id ?? index}>
-              <div className="incident-card-heading">
-                <span className="incident-card-id">{displayValue(incident?.id)}</span>
-                <StatusPill status={incident?.status} />
-              </div>
-              <div className="incident-card-title-row">
+          {visible.map((incident, index) => {
+            const location = typeof incident?.location === "string" ? incident.location.trim() : "";
+            const type = typeof incident?.type === "string" ? incident.type.trim() : "";
+            const locationAndType = [location, type].filter(Boolean).join(" · ") || DASH;
+            const mutualAidLabel = incident?.mutualAid
+              ? `Mutual Aid${incident.mutualAidCounty ? ` · ${incident.mutualAidCounty}` : ""}`
+              : "";
+            return (
+              <article className="incident-card" key={incident?.id ?? index}>
+                <div className="incident-card-heading">
+                  <span className="incident-card-id">{displayValue(incident?.id)}</span>
+                  <StatusPill status={incident?.status} />
+                </div>
                 <h3 className="incident-card-title">{displayValue(incident?.name)}</h3>
-              </div>
-              <p className="incident-card-location">{displayValue(incident?.location)}</p>
-              <dl className="incident-card-details">
-                <div><dt>Type</dt><dd>{displayValue(incident?.type)}</dd></div>
-                <div><dt>Operational periods</dt><dd>{displayNumber(incident?.operationalPeriods)}</dd></div>
-                <div><dt>Mutual aid county</dt><dd>{displayValue(incident?.mutualAidCounty)}</dd></div>
-                <div><dt>Missing persons</dt><dd>{displayNumber(incident?.missingPersons)}</dd></div>
-                <div><dt>Reported</dt><dd>{formatReportedAt(incident?.reportedAt)}</dd></div>
-                <div><dt>Coordinator</dt><dd>{displayValue(incident?.coordinator)}</dd></div>
-              </dl>
-            </article>
-          ))}
+                <p className="incident-card-location">{locationAndType}</p>
+                <div className="incident-card-facts">
+                  <span>
+                    <Icon name="clock" size={13} />
+                    {displayNumber(incident?.operationalPeriods)} OP{incident?.operationalPeriods === 1 ? "" : "s"}
+                  </span>
+                  <span className={incident?.missingPersons > 0 ? "incident-card-missing" : ""}>
+                    <Icon name="users" size={13} />
+                    {displayNumber(incident?.missingPersons)} missing
+                  </span>
+                  {mutualAidLabel && <span className="incident-card-aid">{mutualAidLabel}</span>}
+                </div>
+                <dl className="incident-card-meta">
+                  <div><dt>Reported</dt><dd>{formatReportedAt(incident?.reportedAt)}</dd></div>
+                  <div><dt>Coordinator</dt><dd>{displayValue(incident?.coordinator)}</dd></div>
+                </dl>
+              </article>
+            );
+          })}
         </div>
 
         {visible.length === 0 && (
