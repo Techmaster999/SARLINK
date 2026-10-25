@@ -147,24 +147,11 @@ button { font: inherit; cursor: pointer; }
 }
 
 @media (max-width: 760px) {
-  .incident-hub { grid-template-columns: minmax(0, 1fr); grid-template-rows: 64px auto 1fr; }
-  .sidebar { padding: 10px 16px; border-right: 0; border-bottom: 1px solid var(--border); }
-  .sidebar nav { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-  .nav-link { flex: 1 1 120px; }
-  .user-card { display: none; }
-  .main-content { padding: 24px 16px; }
-  .table-scroll { display: none; }
-  .incident-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+  .quick-view .table-scroll { display: none; }
+  .quick-view .incident-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
 }
 
 @media (max-width: 480px) {
-  .incident-hub { grid-template-rows: auto auto 1fr; }
-  .header { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .brand { gap: 6px; font-size: 16px; }
-  .brand-mark { width: 32px; height: 32px; }
-  .brand-tag { padding: 2px 6px; font-size: 10px; }
-  .header-actions { gap: 6px; }
-  .main-content { padding: 20px 12px; }
   .quick-view { gap: 20px; }
   .quick-view .page-title { font-size: 28px; }
   .quick-view .kpi-grid { gap: 10px; }
@@ -172,10 +159,10 @@ button { font: inherit; cursor: pointer; }
   .quick-view .kpi-label, .quick-view .kpi-detail { font-size: 12px; }
   .quick-view .kpi-value { font-size: 28px; }
   .quick-view .kpi-icon { width: 34px; height: 34px; }
-  .card-head { align-items: stretch; flex-direction: column; gap: 12px; padding: 16px; }
-  .search { width: 100%; }
-  .tabs { gap: 4px; padding: 10px 12px; }
-  .tabs .tab { flex: 1 1 auto; padding: 8px; }
-  .incident-card { padding: 14px; }
-  .incident-card-details { gap: 10px 12px; }
+  .quick-view .card-head { align-items: stretch; flex-direction: column; gap: 12px; padding: 16px; }
+  .quick-view .search { width: 100%; }
+  .quick-view .tabs { gap: 4px; padding: 10px 12px; }
+  .quick-view .tabs .tab { flex: 1 1 auto; padding: 8px; }
+  .quick-view .incident-card { padding: 14px; }
+  .quick-view .incident-card-details { gap: 10px 12px; }
 }
