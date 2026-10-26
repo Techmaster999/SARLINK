@@ -19,7 +19,7 @@ body { min-width: 320px; background: var(--bg); color: var(--ink); font-family: 
 p, h1, h2, h3 { margin: 0; }
 button { font: inherit; cursor: pointer; }
 .icon { display: block; flex: none; }
-.quick-view .sr-only {
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -133,6 +133,71 @@ button { font: inherit; cursor: pointer; }
 .missing { display: inline-flex; align-items: center; gap: 6px; color: var(--red); font-weight: 500; }
 .missing.none { color: #8a93a3; }
 .empty { padding: 32px 24px; color: var(--muted); text-align: center; }
+.incident-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  padding: 40px 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: center;
+}
+.incident-state-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--navy);
+}
+.incident-state-error .incident-state-icon {
+  background: #fcebea;
+  color: var(--red);
+}
+.incident-state-title { font-size: 20px; font-weight: 600; }
+.incident-state-message {
+  max-width: 480px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.state-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin-top: 20px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.state-action:hover { background: #123a7a; }
+.state-action:focus-visible {
+  outline: 2px solid #4b83d1;
+  outline-offset: 2px;
+}
+.state-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #cbd4e2;
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: incident-state-spin 0.8s linear infinite;
+}
+@keyframes incident-state-spin {
+  to { transform: rotate(360deg); }
+}
 .incident-cards { display: none; }
 .incident-card { min-width: 0; padding: 16px; border: 1px solid #d5d9df; border-radius: 10px; background: var(--surface); }
 .incident-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

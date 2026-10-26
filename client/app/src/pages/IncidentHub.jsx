@@ -304,13 +304,62 @@ function Placeholder({ title }) {
   );
 }
 
+function IncidentDataState({ type, onRetry }) {
+  const states = {
+    loading: {
+      title: "Loading incidents",
+      message: "Retrieving the latest incident data.",
+      role: "status",
+    },
+    empty: {
+      title: "No incidents available",
+      message: "There are no incidents to display yet. Create a new callout to begin tracking an operation.",
+      role: "status",
+    },
+    error: {
+      title: "Incident data unavailable",
+      message: "We could not retrieve incident data. Check your connection and try again.",
+      role: "alert",
+    },
+  };
+  const state = states[type];
+
+  return (
+    <section
+      className={`incident-state incident-state-${type}`}
+      role={state.role}
+      aria-live={type === "error" ? "assertive" : "polite"}
+    >
+      <div className="incident-state-icon" aria-hidden="true">
+        {type === "loading" ? <span className="state-spinner" /> : <Icon name={type === "error" ? "alert" : "file"} size={22} />}
+      </div>
+      <h2 className="incident-state-title">{state.title}</h2>
+      <p className="incident-state-message">{state.message}</p>
+      {type === "loading" && <p className="sr-only">Please wait.</p>}
+      {type === "empty" && (
+        <a className="state-action" href="/switchboard--callout">
+          New Callout
+        </a>
+      )}
+      {type === "error" && (
+        <button type="button" className="state-action" onClick={onRetry}>
+          Retry
+        </button>
+      )}
+    </section>
+  );
+}
+
 export default function IncidentHubLayout() {
   const [incidents, setIncidents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
+    setIsLoading(true);
+    setLoadError("");
 
     axios
       .get(INCIDENTS_ENDPOINT, { signal: controller.signal, withCredentials: true })
@@ -324,7 +373,7 @@ export default function IncidentHubLayout() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [retryCount]);
 
   // Current page, read straight from the URL (no router)
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -332,8 +381,11 @@ export default function IncidentHubLayout() {
   function renderPage() {
     switch (path) {
       case BASE_PATH:
-        if (isLoading) return <p className="empty">Loading incidents…</p>;
-        if (loadError) return <p className="empty empty-error" role="alert">{loadError}</p>;
+        if (isLoading) return <IncidentDataState type="loading" />;
+        if (loadError) {
+          return <IncidentDataState type="error" onRetry={() => setRetryCount((count) => count + 1)} />;
+        }
+        if (incidents.length === 0) return <IncidentDataState type="empty" />;
         return renderIncidentQuickView({ incidents });
       case `${BASE_PATH}/map`:
         return <Placeholder title="Area Map" />;

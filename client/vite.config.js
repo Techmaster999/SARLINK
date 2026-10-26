@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       port: 8888,
       strictPort: true,
+      proxy: {
+        '/api': 'http://api-server:8888',
+      },
     },
     define: {
       'import.meta.env.VITE_CLIENT_ID': JSON.stringify(
