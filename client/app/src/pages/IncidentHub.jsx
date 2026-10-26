@@ -41,13 +41,9 @@ function Icon({ name, size = 18 }) {
   );
 }
 
-// Incidents are loaded from the API. Each item is expected to look like:
-// { id, title, location, status, type, ops, aid, missing, reported, coordinator }
+// Incidents are loaded from the API. Each item is expected to use the canonical incident shape.
 const INCIDENTS_ENDPOINT = "/api/incidents";
-
 const TABS = ["All", "Active", "Standby", "Resolved"];
-const countOpen = (list) => list.filter((i) => i.status !== "Resolved").length;
-const sum = (list, key) => list.reduce((total, i) => total + (Number(i[key]) || 0), 0);
 
 // The hub lives under this path (see main.jsx)
 const BASE_PATH = "/incident-hub";
@@ -59,11 +55,34 @@ const NAV = [
   { to: `${BASE_PATH}/admin`, label: "Admin", icon: "shield" },
 ];
 
+const DASH = "—";
+const displayValue = (value) => {
+  if (value === 0) return 0;
+  if (typeof value === "string" && value.trim()) return value;
+  return DASH;
+};
+const displayNumber = (value) => (
+  typeof value === "number" && Number.isFinite(value) ? value : DASH
+);
+const statusValue = (value) => {
+  const status = typeof value === "string" ? value.toLowerCase() : "";
+  return ["active", "standby", "resolved"].includes(status) ? status : "unknown";
+};
+const countOpen = (list) => list.filter((incident) => (
+  ["active", "standby"].includes(statusValue(incident?.status))
+)).length;
+const sum = (list, key) => list.reduce(
+  (total, incident) => total + (typeof incident?.[key] === "number" && Number.isFinite(incident[key]) ? incident[key] : 0),
+  0,
+);
+
 function StatusPill({ status }) {
+  const normalizedStatus = statusValue(status);
+  const labels = { active: "Active", standby: "Standby", resolved: "Resolved", unknown: "Unknown" };
   return (
-    <span className={`status status-${status.toLowerCase()}`}>
+    <span className={`status status-${normalizedStatus}`}>
       <i />
-      {status}
+      {labels[normalizedStatus]}
     </span>
   );
 }
@@ -72,120 +91,198 @@ function Missing({ count }) {
   return (
     <span className={count ? "missing" : "missing none"}>
       <Icon name="users" size={16} />
-      {count || "—"}
+      {displayNumber(count)}
     </span>
   );
 }
 
-function IncidentOverview({ incidents, isLoading, error }) {
+function formatReportedAt(value) {
+  if (typeof value !== "string" || !value.trim()) return DASH;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date).replace(",", "");
+}
+
+function StatCard({ label, value, detail, icon, danger = false }) {
+  return (
+    <article className="kpi-card">
+      <div className="kpi-copy">
+        <p className="kpi-label">{label}</p>
+        <p className="kpi-value">{value}</p>
+        <p className="kpi-detail">{detail}</p>
+      </div>
+      <span className={danger ? "kpi-icon danger" : "kpi-icon"}>
+        <Icon name={icon} size={20} />
+      </span>
+    </article>
+  );
+}
+
+function IncidentQuickView({ incidents }) {
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
 
-  const resolvedCount = incidents.filter((i) => i.status === "Resolved").length;
-
-  const kpis = [
-    { label: "Open Incidents", value: countOpen(incidents), detail: `${resolvedCount} resolved`, icon: "alert" },
-    { label: "Operational Periods", value: sum(incidents, "ops"), detail: "Across all incidents", icon: "calendar" },
-    { label: "Mutual Aid", value: incidents.filter((i) => i.aid).length, detail: "Open out-of-county searches", icon: "aid" },
-    { label: "Persons Missing", value: sum(incidents, "missing"), detail: "Pending recovery", icon: "user", danger: true },
-  ];
-
+  const activeIncidents = incidents.filter((incident) => (
+    ["active", "standby"].includes(statusValue(incident?.status))
+  ));
+  const openCount = activeIncidents.length;
+  const operationalPeriods = sum(incidents, "operationalPeriods");
+  const mutualAidCount = incidents.filter((incident) => incident?.mutualAid === true).length;
+  const missingPersons = sum(incidents, "missingPersons");
   const q = query.trim().toLowerCase();
-  const visible = incidents.filter(
-    (i) =>
-      (tab === "All" || i.status === tab) &&
-      (!q || [i.id, i.title, i.location, i.coordinator].join(" ").toLowerCase().includes(q))
-  );
+  const visible = incidents.filter((incident) => {
+    const status = statusValue(incident?.status);
+    const searchableValues = [
+      incident?.id,
+      incident?.name,
+      incident?.status,
+      incident?.location,
+      incident?.type,
+      incident?.operationalPeriods,
+      incident?.currentOperationalPeriod,
+      incident?.mutualAidCounty,
+      incident?.missingPersons,
+      incident?.reportedAt,
+      incident?.coordinator,
+      incident?.description,
+      incident?.lastUpdate,
+      incident?.mutualAid,
+      ...(Array.isArray(incident?.requestedGroundTypes) ? incident.requestedGroundTypes : []),
+      ...(Array.isArray(incident?.requestedSpecialtyTeams) ? incident.requestedSpecialtyTeams : []),
+    ];
+    return (tab === "All" || status === tab.toLowerCase())
+      && (!q || searchableValues
+        .filter((value) => value !== null && value !== undefined)
+        .some((value) => String(value).toLowerCase().includes(q)));
+  });
 
   return (
-    <div className="page">
+    <div className="page quick-view">
       <div className="page-heading">
         <h1 className="page-title">Incident Hub</h1>
         <p className="page-subtitle">Search &amp; Rescue operations — El Dorado County</p>
       </div>
 
       <div className="kpi-grid">
-        {kpis.map((k) => (
-          <article className="kpi-card" key={k.label}>
-            <div className="kpi-copy">
-              <p className="kpi-label">{k.label}</p>
-              <p className="kpi-value">{k.value}</p>
-              <p className="kpi-detail">{k.detail}</p>
-            </div>
-            <span className={k.danger ? "kpi-icon danger" : "kpi-icon"}>
-              <Icon name={k.icon} size={20} />
-            </span>
-          </article>
-        ))}
+        <StatCard label="Open Incidents" value={openCount} detail="Active and standby" icon="alert" />
+        <StatCard label="Operational Periods" value={operationalPeriods} detail="Across all incidents" icon="calendar" />
+        <StatCard label="Mutual Aid" value={mutualAidCount} detail="Incidents with mutual aid" icon="aid" />
+        <StatCard label="Persons Missing" value={missingPersons} detail="Across all incidents" icon="user" danger />
       </div>
 
       <section className="incidents-card">
         <div className="card-head">
           <h2 className="card-title">
-            Incidents <span className="count">{incidents.length}</span>
+            Incidents <span className="count">{visible.length}</span>
           </h2>
           <label className="search">
             <Icon name="search" size={16} />
+            <span className="sr-only">Search incidents</span>
             <input
               type="search"
               placeholder="Search incidents..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(event) => setQuery(event.target.value)}
             />
           </label>
         </div>
 
-        <div className="tabs" role="tablist">
-          {TABS.map((t) => (
+        <div className="tabs" role="tablist" aria-label="Filter incidents by status">
+          {TABS.map((item) => (
             <button
-              key={t}
+              key={item}
+              type="button"
               role="tab"
-              aria-selected={tab === t}
-              className={tab === t ? "tab active" : "tab"}
-              onClick={() => setTab(t)}
+              aria-selected={tab === item}
+              className={tab === item ? "tab active" : "tab"}
+              onClick={() => setTab(item)}
             >
-              {t}
+              {item}
             </button>
           ))}
         </div>
 
         <div className="table-scroll">
-          <div className="table-header">
-            <span>Incident ID</span>
-            <span>Incident</span>
-            <span>Status</span>
-            <span>Type</span>
-            <span>Ops</span>
-            <span>Mutual Aid</span>
-            <span>Missing</span>
-            <span>Reported</span>
-            <span>Coordinator</span>
-          </div>
-
-          {visible.map((i) => (
-            <div className="table-row" key={i.id}>
-              <span className="incident-id">{i.id}</span>
-              <span className="incident-name">
-                <strong>{i.title}</strong>
-                <small>{i.location}</small>
-              </span>
-              <span><StatusPill status={i.status} /></span>
-              <span>{i.type}</span>
-              <span>{i.ops}</span>
-              <span>{i.aid || "—"}</span>
-              <Missing count={i.missing} />
-              <span className="reported">
-                <Icon name="clock" size={15} />
-                {i.reported}
-              </span>
-              <span>{i.coordinator}</span>
-            </div>
-          ))}
+          <table className="incident-table">
+            <thead>
+              <tr>
+                <th scope="col">Incident ID</th>
+                <th scope="col">Incident</th>
+                <th scope="col">Status</th>
+                <th scope="col">Type</th>
+                <th scope="col">OPs</th>
+                <th scope="col">Mutual Aid</th>
+                <th scope="col">Missing</th>
+                <th scope="col">Reported</th>
+                <th scope="col">Coordinator</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((incident, index) => (
+                <tr className="incident-row" key={incident?.id ?? index}>
+                  <td className="incident-id">{displayValue(incident?.id)}</td>
+                  <td className="incident-name">
+                    <strong>{displayValue(incident?.name)}</strong>
+                    <small>{displayValue(incident?.location)}</small>
+                  </td>
+                  <td><StatusPill status={incident?.status} /></td>
+                  <td>{displayValue(incident?.type)}</td>
+                  <td>{displayNumber(incident?.operationalPeriods)}</td>
+                  <td>{incident?.mutualAid ? displayValue(incident?.mutualAidCounty) : DASH}</td>
+                  <td><Missing count={incident?.missingPersons} /></td>
+                  <td className="reported">
+                    <Icon name="clock" size={15} />
+                    {formatReportedAt(incident?.reportedAt)}
+                  </td>
+                  <td>{displayValue(incident?.coordinator)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {isLoading && <p className="empty">Loading incidents…</p>}
-        {!isLoading && error && <p className="empty empty-error" role="alert">{error}</p>}
-        {!isLoading && !error && visible.length === 0 && (
+        <div className="incident-cards">
+          {visible.map((incident, index) => {
+            const location = typeof incident?.location === "string" ? incident.location.trim() : "";
+            const type = typeof incident?.type === "string" ? incident.type.trim() : "";
+            const locationAndType = [location, type].filter(Boolean).join(" · ") || DASH;
+            const mutualAidLabel = incident?.mutualAid
+              ? `Mutual Aid${incident.mutualAidCounty ? ` · ${incident.mutualAidCounty}` : ""}`
+              : "";
+            return (
+              <article className="incident-card" key={incident?.id ?? index}>
+                <div className="incident-card-heading">
+                  <span className="incident-card-id">{displayValue(incident?.id)}</span>
+                  <StatusPill status={incident?.status} />
+                </div>
+                <h3 className="incident-card-title">{displayValue(incident?.name)}</h3>
+                <p className="incident-card-location">{locationAndType}</p>
+                <div className="incident-card-facts">
+                  <span>
+                    <Icon name="clock" size={13} />
+                    {displayNumber(incident?.operationalPeriods)} OP{incident?.operationalPeriods === 1 ? "" : "s"}
+                  </span>
+                  <span className={incident?.missingPersons > 0 ? "incident-card-missing" : ""}>
+                    <Icon name="users" size={13} />
+                    {displayNumber(incident?.missingPersons)} missing
+                  </span>
+                  {mutualAidLabel && <span className="incident-card-aid">{mutualAidLabel}</span>}
+                </div>
+                <dl className="incident-card-meta">
+                  <div><dt>Reported</dt><dd>{formatReportedAt(incident?.reportedAt)}</dd></div>
+                  <div><dt>Coordinator</dt><dd>{displayValue(incident?.coordinator)}</dd></div>
+                </dl>
+              </article>
+            );
+          })}
+        </div>
+
+        {visible.length === 0 && (
           <p className="empty">
             {incidents.length === 0 ? "No incidents yet." : "No incidents match your filters."}
           </p>
@@ -193,6 +290,10 @@ function IncidentOverview({ incidents, isLoading, error }) {
       </section>
     </div>
   );
+}
+
+export function renderIncidentQuickView({ incidents }) {
+  return <IncidentQuickView incidents={Array.isArray(incidents) ? incidents : []} />;
 }
 
 function Placeholder({ title }) {
@@ -231,7 +332,9 @@ export default function IncidentHubLayout() {
   function renderPage() {
     switch (path) {
       case BASE_PATH:
-        return <IncidentOverview incidents={incidents} isLoading={isLoading} error={loadError} />;
+        if (isLoading) return <p className="empty">Loading incidents…</p>;
+        if (loadError) return <p className="empty empty-error" role="alert">{loadError}</p>;
+        return renderIncidentQuickView({ incidents });
       case `${BASE_PATH}/map`:
         return <Placeholder title="Area Map" />;
       case `${BASE_PATH}/forms`:
