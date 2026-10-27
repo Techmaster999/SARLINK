@@ -1,6 +1,8 @@
 /* Incident Hub - SARLINK search & rescue incident dashboard */
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Header } from "../../../src/components/header/index.js";
+import { Sidebar } from "../../../src/components/Sidebar/index.js";
 import "./IncidentHub.css";
 
 // Inline icons (Lucide-style paths) so no extra dependency is needed
@@ -49,10 +51,10 @@ const TABS = ["All", "Active", "Standby", "Resolved"];
 const BASE_PATH = "/incident-hub";
 
 const NAV = [
-  { to: BASE_PATH, label: "Incidents", icon: "alert" },
-  { to: `${BASE_PATH}/map`, label: "Area Map", icon: "map" },
-  { to: `${BASE_PATH}/forms`, label: "Forms", icon: "file" },
-  { to: `${BASE_PATH}/admin`, label: "Admin", icon: "shield" },
+  { id: "incidents", path: BASE_PATH, label: "Incidents", icon: "fire" },
+  { id: "map", path: `${BASE_PATH}/map`, label: "Area Map", icon: "document" },
+  { id: "forms", path: `${BASE_PATH}/forms`, label: "Forms", icon: "document" },
+  { id: "admin", path: `${BASE_PATH}/admin`, label: "Admin", icon: "shield" },
 ];
 
 const DASH = "—";
@@ -348,54 +350,16 @@ export default function IncidentHubLayout() {
 
   // The sidebar badge follows the loaded data
   const openCount = countOpen(incidents);
-  const nav = NAV.map((n) => (n.to === BASE_PATH ? { ...n, badge: openCount } : n));
+  const nav = NAV.map((item) => (
+    item.path === BASE_PATH ? { ...item, badge: openCount } : item
+  ));
 
   return (
     <div className="incident-hub">
-      <header className="header">
-        <div className="brand">
-          <span className="brand-mark"><Icon name="hex" size={20} /></span>
-          SARLINK
-          <span className="brand-tag">EDSAR</span>
-        </div>
-
-        <div className="header-actions">
-          <button className="callout-button" aria-label="New Callout">
-            <Icon name="plus" size={18} />
-            <span className="callout-label">New Callout</span>
-          </button>
-          <span className="header-divider" />
-          <button className="signout">
-            <Icon name="logout" size={18} />
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      <aside className="sidebar">
-        <nav>
-          {nav.map((n) => (
-            <a
-              key={n.to}
-              href={n.to}
-              className={n.to === path ? "nav-link active" : "nav-link"}
-              aria-current={n.to === path ? "page" : undefined}
-            >
-              <Icon name={n.icon} />
-              {n.label}
-              {n.badge > 0 && <span className="nav-badge">{n.badge}</span>}
-            </a>
-          ))}
-        </nav>
-
-        <div className="user-card">
-          <span className="avatar">DR</span>
-          <div>
-            <p className="user-name">Cpt. D. Reeves</p>
-            <p className="user-role">Operations Lead</p>
-          </div>
-        </div>
-      </aside>
+      <Header
+        onCreateCallout={(calloutPath) => window.location.assign(calloutPath)}
+      />
+      <Sidebar currentPath={path} navItems={nav} />
 
       <main className="main-content">
         {renderPage()}
