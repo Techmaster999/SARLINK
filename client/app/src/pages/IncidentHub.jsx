@@ -45,6 +45,7 @@ function Icon({ name, size = 18 }) {
 
 // Incidents are loaded from the API. Each item is expected to use the canonical incident shape.
 const INCIDENTS_ENDPOINT = "/api/incidents";
+const SESSION_ENDPOINT = "/api/auth/session";
 const TABS = ["All", "Active", "Standby", "Resolved"];
 
 // The hub lives under this path (see main.jsx)
@@ -52,6 +53,40 @@ const BASE_PATH = "/incident-hub";
 const incidentDetailsPath = (incidentId) => (
   `${BASE_PATH}/incidents/${encodeURIComponent(String(incidentId))}`
 );
+
+export async function fetchAndMapIncidents(signal) {
+  const { data: session } = await axios.get(SESSION_ENDPOINT, {
+    signal,
+    withCredentials: true,
+  });
+  if (!session?.user) {
+    const error = new Error("You are not authorized to view incidents.");
+    error.code = "ERR_FORBIDDEN";
+    throw error;
+  }
+
+  const { data } = await axios.get(INCIDENTS_ENDPOINT, {
+    signal,
+    withCredentials: true,
+  });
+  return (Array.isArray(data) ? data : []).map((incident) => ({
+    ...incident,
+    id: incident?.id ?? incident?.caseId,
+    name: incident?.name ?? incident?.incidentName ?? "",
+    status: incident?.status ?? "active",
+    type: incident?.type ?? "SAR",
+    operationalPeriods: Number.isFinite(incident?.operationalPeriods)
+      ? incident.operationalPeriods
+      : 1,
+    mutualAid: incident?.mutualAid === true,
+    missingPersons: Number.isFinite(incident?.missingPersons)
+      ? incident.missingPersons
+      : 0,
+    reportedAt: incident?.reportedAt ?? incident?.dateTime ?? incident?.occurredAt,
+    description: incident?.description ?? "",
+    lastUpdate: incident?.lastUpdate ?? incident?.updatedAt ?? "",
+  }));
+}
 
 const NAV = [
   { to: BASE_PATH, label: "Incidents", icon: "alert" },
@@ -421,7 +456,7 @@ function Placeholder({ title }) {
   );
 }
 
-function IncidentDataState({ type, onRetry }) {
+function IncidentDataState({ type, onRetry, message }) {
   const states = {
     loading: {
       title: "Loading incidents",
@@ -435,7 +470,7 @@ function IncidentDataState({ type, onRetry }) {
     },
     error: {
       title: "Incident data unavailable",
-      message: "We could not retrieve incident data. Check your connection and try again.",
+      message: message || "We could not retrieve incident data. Check your connection and try again.",
       role: "alert",
     },
   };
@@ -478,12 +513,13 @@ export default function IncidentHubLayout() {
     setIsLoading(true);
     setLoadError("");
 
-    axios
-      .get(INCIDENTS_ENDPOINT, { signal: controller.signal, withCredentials: true })
-      .then((res) => setIncidents(Array.isArray(res.data) ? res.data : []))
+    fetchAndMapIncidents(controller.signal)
+      .then(setIncidents)
       .catch((err) => {
         if (axios.isCancel(err)) return;
-        setLoadError("Unable to load incidents. Please try again.");
+        setLoadError(err.code === "ERR_FORBIDDEN"
+          ? "You are not authorized to view incidents."
+          : "Unable to load incidents. Please try again.");
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsLoading(false);
@@ -500,14 +536,26 @@ export default function IncidentHubLayout() {
       case BASE_PATH:
         if (isLoading) return <IncidentDataState type="loading" />;
         if (loadError) {
-          return <IncidentDataState type="error" onRetry={() => setRetryCount((count) => count + 1)} />;
+          return (
+            <IncidentDataState
+              type="error"
+              message={loadError}
+              onRetry={() => setRetryCount((count) => count + 1)}
+            />
+          );
         }
         if (incidents.length === 0) return <IncidentDataState type="empty" />;
         return renderIncidentQuickView({ incidents });
       case path.startsWith(`${BASE_PATH}/incidents/`) ? path : "":
         if (isLoading) return <IncidentDataState type="loading" />;
         if (loadError) {
-          return <IncidentDataState type="error" onRetry={() => setRetryCount((count) => count + 1)} />;
+          return (
+            <IncidentDataState
+              type="error"
+              message={loadError}
+              onRetry={() => setRetryCount((count) => count + 1)}
+            />
+          );
         }
         return (
           <IncidentDetails

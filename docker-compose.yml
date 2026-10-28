@@ -16,12 +16,14 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./server/db/migrations:/docker-entrypoint-initdb.d:ro
+      - ./server/db/migrations/001_create_incidents.sql:/docker-entrypoint-initdb.d/001_create_incidents.sql:ro
+      - ./server/db/seeds/dev_incidents.sql:/docker-entrypoint-initdb.d/002_dev_incidents.sql:ro
 
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "8888:8888"
     environment:
@@ -30,16 +32,22 @@ services:
     volumes:
       - ./client:/app
       - client_node_modules:/app/node_modules
+    depends_on:
+      api-server:
+        condition: service_healthy
     command: pnpm run dev
 
   api-server:
     build:
       context: ./server
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "8889:8888"
     env_file:
       - ./server/.env
+    volumes:
+      - ./server/src:/app/src:ro
     environment:
       NODE_ENV: development
       PORT: 8888
@@ -47,6 +55,17 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8888/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:

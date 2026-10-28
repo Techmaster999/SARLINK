@@ -3,7 +3,8 @@ import { pool } from '../config/db.js';
 export async function fetchActiveIncidents() {
     const { rows } = await pool.query(
         `SELECT id, incident_name, case_id, occurred_at, location, coordinator,
-                mutual_aid, mutual_aid_county
+                personnel, map_url, radio_primary, radio_backup,
+                mutual_aid, mutual_aid_county, created_at
            FROM incidents
           ORDER BY occurred_at DESC`,
     );
@@ -77,6 +78,14 @@ function toDashboardIncident(row) {
     missingPersons: 0,
     reportedAt: row.occurred_at.toISOString(),
     coordinator: row.coordinator,
+    caseId: row.case_id,
+    incidentName: row.incident_name,
+    dateTime: row.occurred_at.toISOString(),
+    personnel: row.personnel ?? "",
+    mapUrl: row.map_url ?? "",
+    radioPrimary: row.radio_primary ?? "",
+    radioBackup: row.radio_backup ?? "",
+    createdAt: row.created_at.toISOString(),
   };
 }
 
