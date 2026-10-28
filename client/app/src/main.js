@@ -1,10 +1,13 @@
 import express from 'express'
 import { createServer as createViteServer } from 'vite'
 import session from 'express-session'
+import 'dotenv/config'
 const app = express();
 const PORT = process.env.PORT || 8888
 import {OAuth2Client} from 'google-auth-library';
-import 'dotenv/config'
+const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || process.env.CLIENT_SECRET;
+const googleClient = new OAuth2Client(googleClientId, googleClientSecret);
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(session({
@@ -19,46 +22,55 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
   },
 }))
-const client = new OAuth2Client(process.env.CLIENT_ID);
-
 app.post('/api/auth/google',async (req,res)=>{
-  const token = req.body.token || req.body.credential
-  if(!token){
-    return res.sendStatus(400)
+  const { code } = req.body;
+  if(!code){
+    return res.status(400).json({
+      error: 'missing_authorization_code',
+      message: 'Google did not return an authorization code. Please try signing in again.',
+    })
   }
   try{
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.CLIENT_ID,
-    })
+    const { tokens } = await googleClient.getToken({
+      code,
+      redirect_uri: 'postmessage',
+    });
+    if (!tokens.refresh_token || !tokens.id_token) {
+      return res.status(401).json({
+        error: 'google_reauth_required',
+        message: 'Google did not issue a renewable session. Please sign in again and approve access.',
+      });
+    }
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: googleClientId,
+    });
 
     const payload = ticket.getPayload()
 
     const {sub: googleId,email,name,picture} = payload;
     const user = {googleId,email,name,picture}
 
-    if (req.body.credential) {
-      req.session.user = user
-      return req.session.save((error) => {
-        if (error) {
-          console.error('Failed to save login session:', error)
-          return res.status(500).send('Unable to save login session')
-        }
-
-        return res.redirect('/home')
-      })
-    }
-
-    res.status(200).json({
-      message: ' auth success',
-      user
+    req.session.user = user;
+    req.session.googleTokens = {
+      refresh_token: tokens.refresh_token,
+      expiry_date: tokens.expiry_date,
+    };
+    req.session.save((error) => {
+      if (error) {
+        console.error('Failed to save login session:', error)
+        return res.status(500).send('Unable to save login session')
+      }
+      return res.status(200).json({ user });
     })
-
-
   }catch(error){
     console.error('Google token verification failed:', error.message)
+    const isExpired = error.message === 'invalid_grant' || error.code === 'invalid_grant';
     res.status(401).json({
-      error: 'invalid token'
+      error: isExpired ? 'google_token_expired' : 'google_sign_in_failed',
+      message: isExpired
+        ? 'Your Google sign-in expired or was revoked. Please sign in again.'
+        : 'Google could not complete sign-in. Please try again.',
     })
 
   }
@@ -66,7 +78,24 @@ app.post('/api/auth/google',async (req,res)=>{
 
 app.get('/api/auth/session', (req, res) => {
   res.set('Cache-Control', 'no-store')
-  res.json({ user: req.session.user || null })
+  if (!req.session.user || !req.session.googleTokens?.refresh_token) {
+    return res.json({ user: null });
+  }
+
+  googleClient.setCredentials(req.session.googleTokens);
+  googleClient.getAccessToken()
+    .then(({ token }) => {
+      if (!token) throw new Error('Google did not return an access token');
+      res.json({ user: req.session.user });
+    })
+    .catch((error) => {
+      console.error('Google session validation failed:', error.message);
+      req.session.destroy(() => res.status(401).json({
+        user: null,
+        error: 'session_expired',
+        message: 'Your Google session expired or was revoked. Please sign in again.',
+      }));
+    });
 })
 
 const clearSession = (req, res) => {

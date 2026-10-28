@@ -8,7 +8,15 @@ export default function HomePage() {
   useEffect(() => {
     fetch('/api/auth/session')
       .then((response) => response.json())
-      .then(({ user: signedInUser }) => {
+      .then(async (response) => {
+        const session = await response.json();
+        if (!response.ok && session.error === 'session_expired') {
+          window.location.replace('/?error=session_expired');
+          return;
+        }
+        return session;
+      })
+      .then(({ user: signedInUser } = {}) => {
         if (signedInUser) {
           setUser(signedInUser);
         } else {
