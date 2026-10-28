@@ -176,6 +176,127 @@ export function BasicInfoFormSection({
   );
 }
 
+/**
+ * Handles mapping and radio channel input changes.
+ * Accepts an event object or (name, value) pair and an optional callback/setter.
+ */
+export function handleRadioMappingChange(eventOrName, valueOrSetter) {
+  if (eventOrName && eventOrName.target) {
+    const { name, value } = eventOrName.target;
+    if (typeof valueOrSetter === "function") {
+      valueOrSetter(name, value);
+    }
+    return { name, value };
+  }
+  if (typeof eventOrName === "string") {
+    const name = eventOrName;
+    const value = valueOrSetter;
+    return { name, value };
+  }
+  return undefined;
+}
+
+/**
+ * MappingRadioFormSection
+ * Acceptance criteria: textboxes with placeholder text for:
+ * Map URL (Mapping), Primary and Secondary (Radio Channels)
+ */
+export function MappingRadioFormSection({
+  register: externalRegister,
+  handleRadioMappingChange: customHandleChange,
+  errors = {},
+  defaultValues = {},
+}) {
+  const localForm = useForm({
+    defaultValues: {
+      mapUrl: "",
+      radioPrimary: "",
+      radioSecondary: "",
+      ...defaultValues,
+    },
+  });
+
+  const register = externalRegister || localForm.register;
+  const onChangeHandler = customHandleChange || handleRadioMappingChange;
+
+  return (
+    <>
+      <section className="ic-card" aria-labelledby="mapping-title">
+        <h2 className="ic-card__title" id="mapping-title">
+          Mapping
+        </h2>
+        <div className="ic-card__content">
+          {/* Map URL */}
+          <div className="ic-field">
+            <label className="ic-field__label" htmlFor="mapping-map-url">
+              Map URL
+              <span className="ic-field__hint">(optional)</span>
+            </label>
+            <input
+              id="mapping-map-url"
+              type="url"
+              placeholder="https://…"
+              className="ic-field__input"
+              {...register("mapUrl", {
+                onChange: (e) => onChangeHandler(e),
+              })}
+            />
+            {errors?.mapUrl && (
+              <p className="ic-field__error">{errors.mapUrl.message || errors.mapUrl}</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="ic-card" aria-labelledby="radio-channels-title">
+        <h2 className="ic-card__title" id="radio-channels-title">
+          Radio channels
+        </h2>
+        <div className="ic-card__content">
+          {/* Primary & Secondary */}
+          <div className="ic-form-row">
+            <div className="ic-field">
+              <label className="ic-field__label" htmlFor="radio-primary">
+                Primary
+              </label>
+              <input
+                id="radio-primary"
+                type="text"
+                placeholder="e.g. CH 3 – Command"
+                className="ic-field__input"
+                {...register("radioPrimary", {
+                  onChange: (e) => onChangeHandler(e),
+                })}
+              />
+              {errors?.radioPrimary && (
+                <p className="ic-field__error">{errors.radioPrimary.message || errors.radioPrimary}</p>
+              )}
+            </div>
+
+            <div className="ic-field">
+              <label className="ic-field__label" htmlFor="radio-secondary">
+                Secondary
+              </label>
+              <input
+                id="radio-secondary"
+                type="text"
+                placeholder="e.g. CH 7 – Tactical"
+                className="ic-field__input"
+                {...register("radioSecondary", {
+                  onChange: (e) => onChangeHandler(e),
+                })}
+              />
+              {errors?.radioSecondary && (
+                <p className="ic-field__error">{errors.radioSecondary.message || errors.radioSecondary}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
 /* header and section cards only, no form fields yet
 acceptance critera: IncidentCreationLayout() */
 export default function IncidentCreationLayout() {
@@ -190,6 +311,9 @@ export default function IncidentCreationLayout() {
       location: "",
       coordinator: "",
       personnel: "",
+      mapUrl: "",
+      radioPrimary: "",
+      radioSecondary: "",
     },
   });
 
@@ -212,6 +336,21 @@ export default function IncidentCreationLayout() {
             errors={errors}
           />
         );
+      }
+
+      /* MappingRadioFormSection renders both the Mapping and Radio channels cards */
+      if (section.id === "mapping") {
+        return (
+          <MappingRadioFormSection
+            key={section.id}
+            register={register}
+            handleRadioMappingChange={handleRadioMappingChange}
+            errors={errors}
+          />
+        );
+      }
+      if (section.id === "radio-channels") {
+        return null;
       }
 
       return (
