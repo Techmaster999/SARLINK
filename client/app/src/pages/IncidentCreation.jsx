@@ -1,10 +1,6 @@
 /* Incident creation page */
-//import { Header } from "../../../src/components/header/index.js";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import "./IncidentCreation.css";
-import { BrowserRouter } from "react-router-dom";
 
 /**
  * Handles basic info input changes.
@@ -54,7 +50,7 @@ export function BasicInfoFormSection({
   const onChangeHandler = customHandleChange || handleBasicInfoChange;
 
   return (
-    <section className="ic-card" key="basic-info" aria-labelledby="basic-info-title">
+    <section className="ic-card" aria-labelledby="basic-info-title">
       <h2 className="ic-card__title" id="basic-info-title">
         Basic info
       </h2>
@@ -229,7 +225,7 @@ export default function IncidentCreationLayout() {
   }
 
   return (
-        <div className="ic-page">
+    <div className="ic-page">
       <header className="sarlink-header">
         <div className="sarlink-header-brand" aria-label="SARLINK EDSAR">
           <span className="sarlink-header-logo">
@@ -300,4 +296,3 @@ export default function IncidentCreationLayout() {
     </div>
   );
 }
-

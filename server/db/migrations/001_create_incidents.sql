@@ -1,12 +1,12 @@
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS incidents (
-  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
   -- Required on the form
   incident_name       TEXT            NOT NULL CHECK (length(btrim(incident_name)) BETWEEN 1 AND 120),
   case_id             TEXT            NOT NULL UNIQUE CHECK (length(btrim(case_id)) BETWEEN 1 AND 40),
-  occured_at          TIMESTAMPTZ     NOT NULL,
+  occurred_at         TIMESTAMPTZ     NOT NULL,
   location            TEXT            NOT NULL CHECK (length(btrim(location)) BETWEEN 1 AND 200),
   coordinator         TEXT            NOT NULL CHECK (length(btrim(coordinator)) BETWEEN 1 AND 100),
 
@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS incidents (
 CREATE TABLE IF NOT EXISTS incident_called_teams (
   incident_id BIGINT NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
   team_id     TEXT   NOT NULL,
+  position    INTEGER,
   PRIMARY KEY (incident_id, team_id)
 );
 
