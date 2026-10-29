@@ -157,22 +157,9 @@ export function Sidebar({
 
   return (
     <aside className="sarlink-sidebar" aria-label="SARLink Navigation Sidebar">
-      {/* Brand Header */}
-      <div className="sarlink-sidebar-brand">
-        <div className="sarlink-sidebar-logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <div className="sarlink-sidebar-title-group">
-          <span className="sarlink-sidebar-app-name">SARLINK</span>
-          <span className="sarlink-sidebar-app-tag">Incident Hub</span>
-        </div>
-      </div>
 
       {/* Navigation Links */}
       <nav className="sarlink-sidebar-nav" aria-label="Main Navigation">
-        <div className="sarlink-nav-section-label">Operations</div>
         <SidebarLinks
           user={user}
           currentPath={currentPath}
