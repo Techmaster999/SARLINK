@@ -1,14 +1,13 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 
 import {GoogleOAuthProvider} from '@react-oauth/google'
 import {BrowserRouter} from 'react-router-dom'
 import LoginPage from './LoginPage'
 import HomePage from './HomePage'
-import IncidentHub from './IncidentHub'
-import IncidentCreationLayout from './IncidentCreation'
 
-
+const IncidentHub = lazy(() => import('./IncidentHub'))
+const IncidentCreationLayout = lazy(() => import('./IncidentCreation'))
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
 const isIncidentHubPath =
@@ -25,7 +24,7 @@ const page =
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      {page}
+      <Suspense fallback={<main aria-busy="true" />}>{page}</Suspense>
     </GoogleOAuthProvider>
   </React.StrictMode>
 );

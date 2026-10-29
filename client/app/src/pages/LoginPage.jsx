@@ -1,4 +1,4 @@
-/* SARLINK IST & Admin sign-in page (React + axios, email + password) */
+/* SARLINK IST & Admin sign-in page (Google OAuth) */
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useState } from "react";
@@ -16,13 +16,15 @@ function BrandMark({ size = 20 }) {
 
 export default function LoginPage() {
   const [formError, setFormError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   async function handleGoogleSuccess({ credential }) {
-    if (!credential) {
+    if (!credential || isLoading) {
       setFormError("Google did not return a credential. Please try again.");
       return;
     }
 
     setFormError("");
+    setIsLoading(true);
     try {
       await axios.post(
         "/api/auth/google",
@@ -30,10 +32,11 @@ export default function LoginPage() {
         { withCredentials: true, timeout: 15000 }
       );
 
-      window.location.href = "/home";
+      window.location.replace("/home");
     } catch (error) {
       console.error("Google sign-in failed:", error);
       setFormError("Unable to sign in with Google. Please try again.");
+      setIsLoading(false);
     }
   }
 
@@ -51,7 +54,7 @@ export default function LoginPage() {
         <h1 className="card-title">SARLINK IST &amp; Admin Sign In</h1>
 
         <p className="card-description">
-          Authorized personnel only. Sign in with your organization email and password.
+          Authorized personnel only. Sign in with your organization Google account.
         </p>
 
         <hr className="divider divider-lg" />
@@ -62,17 +65,21 @@ export default function LoginPage() {
           </div>
         )}
 
-        <div className="google-login custom-google-login">
-          <button type="button" className="btn btn-primary btn-block btn-lg">
-            Sign in
-          </button>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => setFormError("Google sign-in was cancelled or failed.")}
-            useOneTap={false}
-            text="signin"
-            width="100%"
-          />
+        <div className="google-login">
+          {isLoading ? (
+            <button type="button" className="btn btn-primary btn-block btn-lg" disabled>
+              <span className="btn-spinner" aria-hidden="true" />
+              Signing in…
+            </button>
+          ) : (
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setFormError("Google sign-in was cancelled or failed.")}
+              useOneTap={false}
+              text="signin_with"
+              width="304"
+            />
+          )}
         </div>
 
         <hr className="divider divider-md" />

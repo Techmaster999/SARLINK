@@ -20,6 +20,8 @@ const ICONS = {
   clock: ["M22 12a10 10 0 1 0-20 0a10 10 0 0 0 20 0", "M12 6v6l4 2"],
   plus: ["M5 12h14", "M12 5v14"],
   logout: ["M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", "m16 17 5-5-5-5", "M21 12H9"],
+  download: ["M12 3v12", "m7 10 5 5 5-5", "M5 21h14"],
+  arrowLeft: ["m15 18-6-6 6-6", "M9 12h12"],
 };
 
 function Icon({ name, size = 18 }) {
@@ -49,6 +51,9 @@ const TABS = ["All", "Active", "Standby", "Resolved"];
 
 // The hub lives under this path (see main.jsx)
 const BASE_PATH = "/incident-hub";
+const incidentDetailsPath = (incidentId) => (
+  `${BASE_PATH}/incidents/${encodeURIComponent(String(incidentId))}`
+);
 
 const NAV = [
   { id: "incidents", path: BASE_PATH, label: "Incidents", icon: "fire" },
@@ -108,6 +113,20 @@ function formatReportedAt(value) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date).replace(",", "");
+}
+
+function exportIncident(incident) {
+  const incidentId = String(incident?.id ?? "incident");
+  const payload = JSON.stringify(incident, null, 2);
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${incidentId.replace(/[^a-z0-9._-]/gi, "_")}-incident.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function StatCard({ label, value, detail, icon, danger = false }) {
@@ -222,6 +241,7 @@ function IncidentQuickView({ incidents }) {
                 <th scope="col">Missing</th>
                 <th scope="col">Reported</th>
                 <th scope="col">Coordinator</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -242,6 +262,26 @@ function IncidentQuickView({ incidents }) {
                     {formatReportedAt(incident?.reportedAt)}
                   </td>
                   <td>{displayValue(incident?.coordinator)}</td>
+                  <td className="incident-actions">
+                    <a
+                      className="incident-action"
+                      href={incidentDetailsPath(incident?.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open full details for ${displayValue(incident?.name)} in a new tab`}
+                    >
+                      Details
+                    </a>
+                    <button
+                      type="button"
+                      className="incident-action incident-action-button"
+                      onClick={() => exportIncident(incident)}
+                      aria-label={`Export ${displayValue(incident?.name)}`}
+                    >
+                      <Icon name="download" size={15} />
+                      Export
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -279,6 +319,26 @@ function IncidentQuickView({ incidents }) {
                   <div><dt>Reported</dt><dd>{formatReportedAt(incident?.reportedAt)}</dd></div>
                   <div><dt>Coordinator</dt><dd>{displayValue(incident?.coordinator)}</dd></div>
                 </dl>
+                <div className="incident-card-actions">
+                  <a
+                    className="incident-action"
+                    href={incidentDetailsPath(incident?.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open full details for ${displayValue(incident?.name)} in a new tab`}
+                  >
+                    Details
+                  </a>
+                  <button
+                    type="button"
+                    className="incident-action incident-action-button"
+                    onClick={() => exportIncident(incident)}
+                    aria-label={`Export ${displayValue(incident?.name)}`}
+                  >
+                    <Icon name="download" size={15} />
+                    Export
+                  </button>
+                </div>
               </article>
             );
           })}
@@ -289,6 +349,63 @@ function IncidentQuickView({ incidents }) {
             {incidents.length === 0 ? "No incidents yet." : "No incidents match your filters."}
           </p>
         )}
+      </section>
+    </div>
+  );
+}
+
+function IncidentDetails({ incident }) {
+  if (!incident) {
+    return <Placeholder title="Incident not found" />;
+  }
+
+  const fields = [
+    ["Incident ID", incident.id],
+    ["Incident name", incident.name],
+    ["Status", statusValue(incident.status)],
+    ["Type", incident.type],
+    ["Location", incident.location],
+    ["Reported", formatReportedAt(incident.reportedAt)],
+    ["Coordinator", incident.coordinator],
+    ["Operational periods", incident.operationalPeriods],
+    ["Missing persons", incident.missingPersons],
+    ["Mutual aid county", incident.mutualAidCounty],
+    ["Description", incident.description],
+    ["Last update", incident.lastUpdate],
+  ];
+
+  return (
+    <div className="page incident-details">
+      <a className="back-link" href={BASE_PATH}>
+        <Icon name="arrowLeft" size={18} />
+        Back to incident quick view
+      </a>
+      <div className="page-heading">
+        <h1 className="page-title">{displayValue(incident.name)}</h1>
+        <p className="page-subtitle">Incident {displayValue(incident.id)}</p>
+      </div>
+      <section className="details-card" aria-labelledby="incident-details-title">
+        <div className="details-card-heading">
+          <h2 id="incident-details-title">Incident details</h2>
+          <StatusPill status={incident.status} />
+        </div>
+        <dl className="details-grid">
+          {fields.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{displayValue(value)}</dd>
+            </div>
+          ))}
+        </dl>
+        <button
+          type="button"
+          className="state-action"
+          onClick={() => exportIncident(incident)}
+          aria-label={`Export ${displayValue(incident.name)}`}
+        >
+          <Icon name="download" size={16} />
+          Export incident
+        </button>
       </section>
     </div>
   );
@@ -306,13 +423,62 @@ function Placeholder({ title }) {
   );
 }
 
+function IncidentDataState({ type, onRetry }) {
+  const states = {
+    loading: {
+      title: "Loading incidents",
+      message: "Retrieving the latest incident data.",
+      role: "status",
+    },
+    empty: {
+      title: "No incidents available",
+      message: "There are no incidents to display yet. Create a new callout to begin tracking an operation.",
+      role: "status",
+    },
+    error: {
+      title: "Incident data unavailable",
+      message: "We could not retrieve incident data. Check your connection and try again.",
+      role: "alert",
+    },
+  };
+  const state = states[type];
+
+  return (
+    <section
+      className={`incident-state incident-state-${type}`}
+      role={state.role}
+      aria-live={type === "error" ? "assertive" : "polite"}
+    >
+      <div className="incident-state-icon" aria-hidden="true">
+        {type === "loading" ? <span className="state-spinner" /> : <Icon name={type === "error" ? "alert" : "file"} size={22} />}
+      </div>
+      <h2 className="incident-state-title">{state.title}</h2>
+      <p className="incident-state-message">{state.message}</p>
+      {type === "loading" && <p className="sr-only">Please wait.</p>}
+      {type === "empty" && (
+        <a className="state-action" href="/switchboard--callout">
+          New Callout
+        </a>
+      )}
+      {type === "error" && (
+        <button type="button" className="state-action" onClick={onRetry}>
+          Retry
+        </button>
+      )}
+    </section>
+  );
+}
+
 export default function IncidentHubLayout() {
   const [incidents, setIncidents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
+    setIsLoading(true);
+    setLoadError("");
 
     axios
       .get(INCIDENTS_ENDPOINT, { signal: controller.signal, withCredentials: true })
@@ -326,7 +492,7 @@ export default function IncidentHubLayout() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [retryCount]);
 
   // Current page, read straight from the URL (no router)
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -334,9 +500,24 @@ export default function IncidentHubLayout() {
   function renderPage() {
     switch (path) {
       case BASE_PATH:
-        if (isLoading) return <p className="empty">Loading incidents…</p>;
-        if (loadError) return <p className="empty empty-error" role="alert">{loadError}</p>;
+        if (isLoading) return <IncidentDataState type="loading" />;
+        if (loadError) {
+          return <IncidentDataState type="error" onRetry={() => setRetryCount((count) => count + 1)} />;
+        }
+        if (incidents.length === 0) return <IncidentDataState type="empty" />;
         return renderIncidentQuickView({ incidents });
+      case path.startsWith(`${BASE_PATH}/incidents/`) ? path : "":
+        if (isLoading) return <IncidentDataState type="loading" />;
+        if (loadError) {
+          return <IncidentDataState type="error" onRetry={() => setRetryCount((count) => count + 1)} />;
+        }
+        return (
+          <IncidentDetails
+            incident={incidents.find(
+              (incident) => String(incident?.id) === decodeURIComponent(path.slice(`${BASE_PATH}/incidents/`.length)),
+            )}
+          />
+        );
       case `${BASE_PATH}/map`:
         return <Placeholder title="Area Map" />;
       case `${BASE_PATH}/forms`:

@@ -2,9 +2,12 @@ import { pool } from '../config/db.js';
 
 export async function fetchActiveIncidents() {
     const { rows } = await pool.query(
-        "SELECT * FROM incidents WHERE status = 'active' ORDER BY started_at DESC", 
+        `SELECT id, incident_name, case_id, occurred_at, location, coordinator,
+                mutual_aid, mutual_aid_county
+           FROM incidents
+          ORDER BY occurred_at DESC`,
     );
-    return rows;
+    return rows.map(toDashboardIncident);
 }
 
 export async function insertIncident(incident, db = pool) {
@@ -59,6 +62,22 @@ export async function insertIncident(incident, db = pool) {
 
 function blankToNull(value) {
   return value === undefined || value === null || value === "" ? null : value;
+}
+
+function toDashboardIncident(row) {
+  return {
+    id: row.case_id,
+    name: row.incident_name,
+    status: "active",
+    type: "SAR",
+    location: row.location,
+    operationalPeriods: 1,
+    mutualAid: row.mutual_aid,
+    mutualAidCounty: row.mutual_aid_county,
+    missingPersons: 0,
+    reportedAt: row.occurred_at.toISOString(),
+    coordinator: row.coordinator,
+  };
 }
 
 // Database row (snake_case) → API shape (camelCase, same names the form uses).

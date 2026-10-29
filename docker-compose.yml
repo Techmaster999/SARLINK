@@ -43,7 +43,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 8888
-      DATABASE_URL: postgres://myuser:[REDACTED]@postgres-db:5432/perndb
+      DATABASE_URL: postgres://myuser:mypassword@postgres-db:5432/perndb
     depends_on:
       postgres-db:
         condition: service_healthy
