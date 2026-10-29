@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 
 import {GoogleOAuthProvider} from '@react-oauth/google'
+import {BrowserRouter} from 'react-router-dom'
 import LoginPage from './LoginPage'
 import HomePage from './HomePage'
 
@@ -15,7 +16,7 @@ const page =
   pathname === '/home'
     ? <HomePage />
     : isIncidentHubPath
-      ? <IncidentHub />
+      ? <BrowserRouter><IncidentHub /></BrowserRouter>
     : pathname === '/switchboard--callout'
     ? <IncidentCreationLayout />
     : <LoginPage />
