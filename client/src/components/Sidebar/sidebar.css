@@ -76,7 +76,7 @@ will just comment out just in case */
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  color: #64748b;
+  color: #0A0A0A;
   letter-spacing: 0.75px;
   padding: 8px 12px 6px 12px;
   margin-top: 8px;
@@ -88,7 +88,7 @@ will just comment out just in case */
   gap: 12px;
   padding: 10px 14px;
   border-radius: 8px;
-  color: #94a3b8;
+  color: #0A0A0A;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -104,7 +104,7 @@ will just comment out just in case */
 }
 
 .sarlink-nav-item.active {
-  background: #0b2a5b;
+  background: #071D40;
   color: #ffffff;
   font-weight: 600;
   border-color: rgba(2, 132, 199, 0.3);
@@ -184,7 +184,7 @@ will just comment out just in case */
 
 .sarlink-user-role {
   font-size: 11px;
-  color: #94a3b8;
+  color: #5B6470;
   display: flex;
   align-items: center;
   gap: 4px;
