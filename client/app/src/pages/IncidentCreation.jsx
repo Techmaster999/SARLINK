@@ -289,6 +289,15 @@ export function MappingRadioFormSection({
               />
               {errors?.radioSecondary && (
                 <p className="ic-field__error">{errors.radioSecondary.message || errors.radioSecondary}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
 // ── Master team list ──────────────────────────────────────────────────────────
 export const ALL_TEAMS = [
   // Ground
@@ -729,11 +738,6 @@ export function SpecialtyTeamsSection({
             </div>
           </div>
         </div>
-      </section>
-    </>
-  );
-}
-
       </div>
     </section>
   );
@@ -864,7 +868,7 @@ export default function IncidentCreationLayout() {
           </button>
         </div>
       </header>
-      
+
       <main className="ic-main">
         <div className="incident-creation">
           <header className="ic-header">
