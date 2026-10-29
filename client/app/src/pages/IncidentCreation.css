@@ -250,3 +250,225 @@
 .ic-main {
   padding: 32px 16px;
 }
+
+
+/* Specialty Teams Support Section */
+.ic-teams-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ic-teams-filter {
+  max-width: 320px;
+}
+
+.ic-teams-select {
+  cursor: pointer;
+}
+
+.ic-teams-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ic-teams-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.ic-teams-col__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ic-teams-col__title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-text-card);
+}
+
+.ic-teams-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #9ca3af;
+  color: #ffffff;
+}
+
+.ic-teams-badge--active {
+  background-color: #0b2a5b;
+}
+
+.ic-teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ic-teams-empty {
+  font-size: 13px;
+  color: var(--ic-text-card);
+  margin: 12px 0;
+  text-align: center;
+}
+
+.ic-team-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--ic-radius-sm);
+  border: 1px solid var(--ic-border);
+  background-color: #ffffff;
+  cursor: grab;
+  user-select: none;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.ic-team-item:hover {
+  background-color: var(--ic-surface-hover);
+  border-color: #9ca3af;
+}
+
+.ic-team-item:active {
+  cursor: grabbing;
+}
+
+.ic-team-grip {
+  display: flex;
+  align-items: center;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.ic-team-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ic-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ic-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.ic-tag--type {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+.ic-tag--k9 {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+
+.ic-team-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background-color: transparent;
+  color: var(--ic-text-card);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.ic-team-item:hover .ic-team-action-btn {
+  background-color: #0b2a5b;
+  color: #ffffff;
+}
+
+.ic-teams-dropzone {
+  min-height: 180px;
+  border-radius: var(--ic-radius-sm);
+  border: 2px dashed var(--ic-border);
+  background-color: #fafbfc;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.ic-teams-dropzone--active {
+  border-color: #0b2a5b;
+  background-color: #eff6ff;
+}
+
+.ic-teams-dropzone-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 150px;
+  color: var(--ic-text-card);
+  text-align: center;
+  pointer-events: none;
+}
+
+.ic-dropzone-icon {
+  opacity: 0.35;
+  color: #0b2a5b;
+}
+
+.ic-teams-dropzone-placeholder p {
+  font-size: 13px;
+}
+
+.ic-team-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--ic-radius-sm);
+  border: 1px solid var(--ic-border);
+  background-color: #f9fafb;
+}
+
+.ic-team-action-btn--remove:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+@media (max-width: 600px) {
+  .ic-teams-grid {
+    grid-template-columns: 1fr;
+  }
+}
