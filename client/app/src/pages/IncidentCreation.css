@@ -235,6 +235,54 @@
   color: #b42318;
 }
 
+.ic-mutual-aid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ic-mutual-aid__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--ic-text);
+  cursor: pointer;
+}
+
+.ic-mutual-aid__checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #0b2a5b;
+  cursor: pointer;
+}
+
+.ic-mutual-aid__checkbox:focus-visible {
+  outline: 2px solid #0b2a5b;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ic-mutual-aid__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ic-text);
+}
+
+.ic-mutual-aid__county {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-left: 16px;
+  border-left: 1px solid #d5d9df;
+}
+
+.ic-field__select {
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   .ic-title { font-size: 28px; }
   .ic-card { padding: 20px 16px; }

@@ -1,6 +1,68 @@
 /* Incident creation page */
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import "./IncidentCreation.css";
+
+const CA_COUNTIES = [
+  "Alameda",
+  "Alpine",
+  "Amador",
+  "Butte",
+  "Calaveras",
+  "Colusa",
+  "Contra Costa",
+  "Del Norte",
+  "El Dorado",
+  "Fresno",
+  "Glenn",
+  "Humboldt",
+  "Imperial",
+  "Inyo",
+  "Kern",
+  "Kings",
+  "Lake",
+  "Lassen",
+  "Los Angeles",
+  "Madera",
+  "Marin",
+  "Mariposa",
+  "Mendocino",
+  "Merced",
+  "Modoc",
+  "Mono",
+  "Monterey",
+  "Napa",
+  "Nevada",
+  "Orange",
+  "Placer",
+  "Plumas",
+  "Riverside",
+  "Sacramento",
+  "San Benito",
+  "San Bernardino",
+  "San Diego",
+  "San Francisco",
+  "San Joaquin",
+  "San Luis Obispo",
+  "San Mateo",
+  "Santa Barbara",
+  "Santa Clara",
+  "Santa Cruz",
+  "Shasta",
+  "Sierra",
+  "Siskiyou",
+  "Solano",
+  "Sonoma",
+  "Stanislaus",
+  "Sutter",
+  "Tehama",
+  "Trinity",
+  "Tulare",
+  "Tuolumne",
+  "Ventura",
+  "Yolo",
+  "Yuba",
+];
 
 /**
  * Handles basic info input changes.
@@ -33,6 +95,10 @@ export function BasicInfoFormSection({
   handleBasicInfoChange: customHandleChange,
   errors = {},
   defaultValues = {},
+  mutualAid,
+  handleMutualAidToggle,
+  mutualAidCounty,
+  handleCountySelect,
 }) {
   const localForm = useForm({
     defaultValues: {
@@ -171,6 +237,42 @@ export function BasicInfoFormSection({
             )}
           </div>
         </div>
+
+        <div className="ic-mutual-aid">
+          <label className="ic-mutual-aid__toggle" htmlFor="basic-info-mutual-aid">
+            <input
+              id="basic-info-mutual-aid"
+              type="checkbox"
+              className="ic-mutual-aid__checkbox"
+              checked={mutualAid}
+              onChange={handleMutualAidToggle}
+            />
+            <span className="ic-mutual-aid__label">Mutual Aid</span>
+          </label>
+
+          {mutualAid && (
+            <div className="ic-mutual-aid__county">
+              <label className="ic-field__label" htmlFor="basic-info-mutual-aid-county">
+                Requesting County
+              </label>
+              <select
+                id="basic-info-mutual-aid-county"
+                className="ic-field__input ic-field__select"
+                value={mutualAidCounty}
+                onChange={handleCountySelect}
+              >
+                <option value="" disabled>
+                  Select a county…
+                </option>
+                {CA_COUNTIES.map((county) => (
+                  <option key={county} value={county}>
+                    {`${county} County`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -179,6 +281,9 @@ export function BasicInfoFormSection({
 /* header and section cards only, no form fields yet
 acceptance critera: IncidentCreationLayout() */
 export default function IncidentCreationLayout() {
+  const [mutualAid, setMutualAid] = useState(false);
+  const [mutualAidCounty, setMutualAidCounty] = useState("");
+
   const {
     register,
     formState: { errors },
@@ -192,6 +297,19 @@ export default function IncidentCreationLayout() {
       personnel: "",
     },
   });
+
+  function handleMutualAidToggle(event) {
+    const nextValue = event.target.checked;
+    setMutualAid(nextValue);
+
+    if (!nextValue) {
+      setMutualAidCounty("");
+    }
+  }
+
+  function handleCountySelect(event) {
+    setMutualAidCounty(event.target.value);
+  }
 
   /* acceptance criteria: renderCreationFormSections() */
   function renderCreationFormSections() {
@@ -210,6 +328,10 @@ export default function IncidentCreationLayout() {
             register={register}
             handleBasicInfoChange={handleBasicInfoChange}
             errors={errors}
+            mutualAid={mutualAid}
+            handleMutualAidToggle={handleMutualAidToggle}
+            mutualAidCounty={mutualAidCounty}
+            handleCountySelect={handleCountySelect}
           />
         );
       }
