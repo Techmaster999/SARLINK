@@ -229,10 +229,70 @@
   color: #5b6470;
 }
 
+.ic-field__select {
+  cursor: pointer;
+}
+
 .ic-field__error {
   margin: 0;
   font-size: 13px;
   color: #b42318;
+}
+
+.ic-mutual-aid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ic-mutual-aid__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.ic-mutual-aid__checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #0b2a5b;
+  cursor: pointer;
+}
+
+.ic-mutual-aid__checkbox:focus-visible,
+.ic-field__select:focus-visible {
+  outline: 2px solid #0b2a5b;
+  outline-offset: 2px;
+}
+
+.ic-mutual-aid__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ic-text);
+  cursor: pointer;
+}
+
+.ic-mutual-aid__county {
+  margin-left: 24px;
+  padding-left: 12px;
+  border-left: 2px solid #d5d9df;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  animation: ic-mutual-aid-reveal 0.18s ease;
+}
+
+@keyframes ic-mutual-aid-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 600px) {
