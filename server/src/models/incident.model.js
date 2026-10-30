@@ -1,11 +1,21 @@
 import { pool } from '../config/db.js';
 
-export async function fetchActiveIncidents() {
+export async function fetchActiveIncidents({ search } = {}) {
+    // Escape LIKE wildcards so the user's text matches literally.
+    const pattern = search ? `%${search.replace(/[\\%_]/g, '\\$&')}%` : null;
     const { rows } = await pool.query(
         `SELECT id, incident_name, case_id, occurred_at, location, coordinator,
                 mutual_aid, mutual_aid_county
            FROM incidents
+          WHERE $1::text IS NULL
+             OR incident_name     ILIKE $1 ESCAPE '\\'
+             OR case_id           ILIKE $1 ESCAPE '\\'
+             OR location          ILIKE $1 ESCAPE '\\'
+             OR coordinator       ILIKE $1 ESCAPE '\\'
+             OR mutual_aid_county ILIKE $1 ESCAPE '\\'
+             OR personnel         ILIKE $1 ESCAPE '\\'
           ORDER BY occurred_at DESC`,
+        [pattern],
     );
     return rows.map(toDashboardIncident);
 }
