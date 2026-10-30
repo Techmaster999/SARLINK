@@ -48,6 +48,7 @@ function Icon({ name, size = 18 }) {
 // Incidents are loaded from the API. Each item is expected to use the canonical incident shape.
 const INCIDENTS_ENDPOINT = "/api/incidents";
 const TABS = ["All", "Active", "Standby", "Resolved"];
+const SEARCH_DEBOUNCE_MS = 300;
 
 // The hub lives under this path (see main.jsx)
 const BASE_PATH = "/incident-hub";
@@ -155,32 +156,46 @@ function IncidentQuickView({ incidents }) {
   const operationalPeriods = sum(incidents, "operationalPeriods");
   const mutualAidCount = incidents.filter((incident) => incident?.mutualAid === true).length;
   const missingPersons = sum(incidents, "missingPersons");
-  const q = query.trim().toLowerCase();
-  const visible = incidents.filter((incident) => {
-    const status = statusValue(incident?.status);
-    const searchableValues = [
-      incident?.id,
-      incident?.name,
-      incident?.status,
-      incident?.location,
-      incident?.type,
-      incident?.operationalPeriods,
-      incident?.currentOperationalPeriod,
-      incident?.mutualAidCounty,
-      incident?.missingPersons,
-      incident?.reportedAt,
-      incident?.coordinator,
-      incident?.description,
-      incident?.lastUpdate,
-      incident?.mutualAid,
-      ...(Array.isArray(incident?.requestedGroundTypes) ? incident.requestedGroundTypes : []),
-      ...(Array.isArray(incident?.requestedSpecialtyTeams) ? incident.requestedSpecialtyTeams : []),
-    ];
-    return (tab === "All" || status === tab.toLowerCase())
-      && (!q || searchableValues
-        .filter((value) => value !== null && value !== undefined)
-        .some((value) => String(value).toLowerCase().includes(q)));
-  });
+  const q = query.trim();
+  const [results, setResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+
+  // Search runs in the database; wait for typing to pause before asking.
+  useEffect(() => {
+    setSearchError("");
+    if (!q) {
+      setResults(null);
+      setIsSearching(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      axios
+        .get(INCIDENTS_ENDPOINT, { params: { q }, signal: controller.signal, withCredentials: true })
+        .then((res) => setResults(Array.isArray(res.data) ? res.data : []))
+        .catch((err) => {
+          if (axios.isCancel(err)) return;
+          setResults([]);
+          setSearchError("Search failed. Please try again.");
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setIsSearching(false);
+        });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [q]);
+
+  const source = q && results ? results : incidents;
+  const visible = source.filter((incident) => (
+    tab === "All" || statusValue(incident?.status) === tab.toLowerCase()
+  ));
 
   return (
     <div className="page quick-view">
@@ -344,7 +359,9 @@ function IncidentQuickView({ incidents }) {
           })}
         </div>
 
-        {visible.length === 0 && (
+        {isSearching && <p className="empty" role="status">Searching…</p>}
+        {searchError && <p className="empty" role="alert">{searchError}</p>}
+        {!isSearching && !searchError && visible.length === 0 && (
           <p className="empty">
             {incidents.length === 0 ? "No incidents yet." : "No incidents match your filters."}
           </p>
