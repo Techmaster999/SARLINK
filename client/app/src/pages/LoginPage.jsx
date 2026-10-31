@@ -1,5 +1,5 @@
 /* SARLINK IST & Admin sign-in page (Google OAuth) */
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useState } from "react";
 import "./LoginPage.css";
@@ -15,30 +15,48 @@ function BrandMark({ size = 20 }) {
 }
 
 export default function LoginPage() {
-  const [formError, setFormError] = useState("");
+  const [formError, setFormError] = useState(
+    new URLSearchParams(window.location.search).get("error") === "session_expired"
+      ? "Your Google session expired or was revoked. Please sign in again."
+      : ""
+  );
   const [isLoading, setIsLoading] = useState(false);
-  async function handleGoogleSuccess({ credential }) {
-    if (!credential || isLoading) {
-      setFormError("Google did not return a credential. Please try again.");
-      return;
-    }
+  const login = useGoogleLogin({
+    flow: "auth-code",
+    ux_mode: "popup",
+    access_type: "offline",
+    prompt: "consent",
+    onSuccess: async ({ code }) => {
+      if (!code || isLoading) return;
+      setFormError("");
+      setIsLoading(true);
+      try {
+        await axios.post(
+          "/api/auth/google",
+          { code },
+          { withCredentials: true, timeout: 15000 }
+        );
 
-    setFormError("");
-    setIsLoading(true);
-    try {
-      await axios.post(
-        "/api/auth/google",
-        { credential },
-        { withCredentials: true, timeout: 15000 }
-      );
-
-      window.location.replace("/home");
-    } catch (error) {
-      console.error("Google sign-in failed:", error);
-      setFormError("Unable to sign in with Google. Please try again.");
-      setIsLoading(false);
-    }
-  }
+        window.location.replace("/home");
+      } catch (error) {
+        console.error("Google sign-in failed:", error);
+        const code = error.response?.data?.error;
+        setFormError(
+          code === "google_token_expired"
+            ? "Your Google sign-in expired or was revoked. Please sign in again."
+            : code === "google_reauth_required"
+              ? "Google did not grant a renewable session. Please sign in again and approve access."
+              : code === "missing_authorization_code"
+                ? "Google did not return a sign-in code. Please try again."
+                : error.code === "ECONNABORTED"
+                  ? "Sign-in timed out. Check your connection and try again."
+                  : "Google sign-in could not be completed. Please try again."
+        );
+        setIsLoading(false);
+      }
+    },
+    onError: () => setFormError("Google sign-in was cancelled. Please try again when ready."),
+  });
 
   return (
     <main className="login-page">
@@ -72,13 +90,9 @@ export default function LoginPage() {
               Signing in…
             </button>
           ) : (
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setFormError("Google sign-in was cancelled or failed.")}
-              useOneTap={false}
-              text="signin_with"
-              width="304"
-            />
+            <button type="button" className="btn btn-primary btn-block btn-lg" onClick={() => login()}>
+              Sign in with Google
+            </button>
           )}
         </div>
 

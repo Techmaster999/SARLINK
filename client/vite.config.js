@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       port: 8888,
       strictPort: true,
       proxy: {
-        '/api': 'http://api-server:8888',
+        '/api/incidents': 'http://api-server:8888',
       },
     },
     define: {
