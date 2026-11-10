@@ -8,6 +8,7 @@ import HomePage from './HomePage'
 
 const IncidentHub = lazy(() => import('./IncidentHub'))
 const IncidentCreationLayout = lazy(() => import('./IncidentCreation'))
+const Dashboard = lazy(() => import('./Dashboard'))
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
 const isIncidentHubPath =
@@ -19,6 +20,8 @@ const page =
       ? <BrowserRouter><IncidentHub /></BrowserRouter>
     : pathname === '/switchboard--callout'
     ? <IncidentCreationLayout />
+    : pathname === '/dashboard' || pathname === '/incident-dashboard'
+    ? <Dashboard />
     : <LoginPage />
 
 ReactDOM.createRoot(document.getElementById('root')).render(
