@@ -1,7 +1,7 @@
 export function errorHandler(err, req, res, next) {
     if (res.headersSent) return next(err);
 
-    if (err.type === "enity.parse.failed") {
+    if (err.type === "entity.parse.failed") {
         return res.status(400).json({ message: "Request body must be valid JSON." });
     }
 
@@ -9,7 +9,7 @@ export function errorHandler(err, req, res, next) {
     if (status >= 500) console.error(err);
     
     res.status(status).json({
-        message: status >= 500 ? "Soemthing went wrong the server." : err.message,
-        ...arguments(err.errors ? { errors: err.errors } : {}),
+        message: status >= 500 ? "Something went wrong on the server." : err.message,
+        ...(err.errors ? { errors: err.errors } : {}),
     });
 }
