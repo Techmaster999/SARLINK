@@ -295,6 +295,20 @@ export function StatusLegend() {
   );
 }
 
+/* Component forAdd Team button */
+export function AddTeamButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      className="sar-header-btn sar-header-btn--primary"
+      onClick={onClick}
+    >
+      <PlusIcon size={14} />
+      Add Team
+    </button>
+  );
+}
+
 /**
  * DashboardHeader (SiteHeader in Figma)
  * Renders the 3-tier Dashboard header from Dashboard-figma/main.tsx:
@@ -410,14 +424,9 @@ export function DashboardHeader({
 
         {/* Action Buttons */}
         <div className="sar-site-header__actions">
-          <button
-            type="button"
-            className="sar-header-btn sar-header-btn--primary"
-            onClick={onAddTeam}
-          >
-            <PlusIcon size={14} />
-            Add Team
-          </button>
+          {
+            <AddTeamButton onClick={onAddTeam} /> // call to render Add Team button 
+          }
 
           <button
             type="button"
