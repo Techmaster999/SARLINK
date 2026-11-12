@@ -1,11 +1,35 @@
-import { insertTeam } from "../models/team.model.js";
+import { findTeamById, insertTeam } from "../models/team.model.js";
 import { upsertTeamMembership } from "../models/teamMember.model.js";
+import { saveVolunteerStatus } from "../models/volunteer.model.js";
+import { pool } from "../config/db.js";
 import { broadcast, EVENTS } from "../realtime/socket.js";
 import { HttpError } from "../utils/httpError.js";
 
 const UNIQUE_VIOLATION = "23505";
 const FOREIGN_KEY_VIOLATION = "23503";
 const CHECK_VIOLATION = "23514";
+
+export function getStatusForTeam(team) {
+    return team?.name?.trim().toLowerCase() === "command post" ? "Standby" : "Assigned";
+}
+
+export async function updateVolunteerStatus(volunteerId, teamId, { db = pool } = {}) {
+    const team = await findTeamById(teamId, db);
+    if (!team) {
+        throw new HttpError(404, "That team doesn't exist.", {
+            teamId: "That team doesn't exist.",
+        });
+    }
+
+    const status = getStatusForTeam(team);
+    const volunteer = await saveVolunteerStatus(volunteerId, status, db);
+    if (!volunteer) {
+        throw new HttpError(404, "That volunteer doesn't exist.", {
+            volunteerId: "That volunteer doesn't exist.",
+        });
+    }
+    return volunteer;
+}
 
 /** Saves a new team linked to the given incident and returns it (with its new ID). */
 export async function createTeam(name, leaderId, color, incidentId, { db } = {}) {
@@ -35,13 +59,20 @@ export async function createTeam(name, leaderId, color, incidentId, { db } = {})
  * After saving, tells every open dashboard so it can update without a refresh.
  *
  * @returns {Promise<{ volunteerId: string, teamId: number, previousTeamId: number|null,
- *   incidentId: number, assignedAt: string }>}
+ *   incidentId: number, assignedAt: string, status: 'Assigned'|'Standby' }>}
  */
 export async function reassignVolunteerToTeam(volunteerId, newTeamId, { db, notify = broadcast } = {}) {
+    const connection = db ?? pool;
+    const client = await connection.connect();
     let membership;
     try {
-        membership = await upsertTeamMembership(volunteerId, newTeamId, db);
+        await client.query("BEGIN");
+        membership = await upsertTeamMembership(volunteerId, newTeamId, client);
+        const volunteerStatus = await updateVolunteerStatus(volunteerId, newTeamId, { db: client });
+        await client.query("COMMIT");
+        membership = { ...membership, status: volunteerStatus.status };
     } catch (err) {
+        await client.query("ROLLBACK");
         if (err.code === FOREIGN_KEY_VIOLATION) {
             throw new HttpError(404, "That team doesn't exist.", {
                 teamId: "That team doesn't exist.",
@@ -51,6 +82,8 @@ export async function reassignVolunteerToTeam(volunteerId, newTeamId, { db, noti
             throw new HttpError(400, "Some volunteer details are invalid.");
         }
         throw err; // unexpected -> 500 via the error handler
+    } finally {
+        client.release();
     }
 
     // Only announce real moves; re-saving the same team changes nothing on screen.

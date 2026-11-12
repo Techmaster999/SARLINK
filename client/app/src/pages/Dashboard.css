@@ -529,6 +529,145 @@
   color: #5b6470;
 }
 
+.sar-ist-subteam {
+  margin-bottom: 14px;
+  border: 1px solid #c5d0e4;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef3fb 100%);
+  overflow: hidden;
+}
+
+.sar-ist-subteam__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: #0b2a5b;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.sar-ist-subteam__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.sar-ist-subteam__mark {
+  display: inline-flex;
+  width: 17px;
+  height: 17px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: #0b2a5b;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.sar-ist-subteam__count {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 9px;
+  background: #dce7f8;
+  color: #0b2a5b;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.sar-ist-subteam__toggle {
+  color: #60708a;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.sar-ist-subteam__body {
+  display: grid;
+  gap: 5px;
+  padding: 0 8px 8px;
+}
+
+.sar-ist-subteam__empty {
+  margin: 0;
+  padding: 5px 2px 2px;
+  color: #60708a;
+  font-size: 11px;
+}
+
+.sar-compact-volunteer-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 7px;
+  border: 1px solid #dfe5ee;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sar-compact-volunteer-tab__avatar {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 22px;
+  border-radius: 50%;
+  background: #dce7f8;
+  color: #0b2a5b;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.sar-compact-volunteer-tab__copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.sar-compact-volunteer-tab__copy strong,
+.sar-compact-volunteer-tab__copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sar-compact-volunteer-tab__copy strong {
+  color: #1d2735;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sar-compact-volunteer-tab__copy small {
+  color: #667387;
+  font-size: 10px;
+}
+
+.sar-standby-list {
+  display: grid;
+  gap: 5px;
+}
+
+.sar-standby-list__heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px 2px;
+  color: #5b6470;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 /* ── Create Team Modal (DT-48) ─────────────────────────────────────────────── */
 .ctm-overlay-root {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
