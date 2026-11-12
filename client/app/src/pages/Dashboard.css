@@ -1,5 +1,10 @@
-/* Dashboard & Create Team Modal (DT-48) - Figma design tokens */
+/* Dashboard Header (DT-240) — Figma design tokens & 3-tier layout */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@keyframes sar-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 
 .sar-dashboard {
   min-height: 100vh;
@@ -11,20 +16,31 @@
 .sar-dashboard *,
 .sar-dashboard *::before,
 .sar-dashboard *::after,
+.sar-site-header *,
+.sar-site-header *::before,
+.sar-site-header *::after,
 .ctm-overlay-root *,
 .ctm-overlay-root *::before,
 .ctm-overlay-root *::after {
   box-sizing: border-box;
 }
 
-/* ── Dashboard Header ──────────────────────────────────────────────────────── */
-.sar-dashboard-header {
-  background-color: #ffffff;
+/* ── 3-Tier Fixed Dashboard Header ─────────────────────────────────────────── */
+.sar-site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  background-color: #ffffff;
 }
 
-.sar-dashboard-header__top {
+/* ── Tier 1: Top Navigation Bar ────────────────────────────────────────────── */
+.sar-site-header__tier1 {
   height: 56px;
+  background-color: #ffffff;
   border-bottom: 1px solid #d5d9df;
   display: flex;
   align-items: center;
@@ -32,13 +48,14 @@
   padding: 0 24px;
 }
 
-.sar-dashboard-brand {
+.sar-site-header__brand {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-right: 8px;
 }
 
-.sar-dashboard-logo {
+.sar-site-header__logo {
   width: 32px;
   height: 32px;
   border-radius: 6px;
@@ -46,30 +63,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.sar-dashboard-brand__name {
+.sar-site-header__brand-name {
   font-size: 16px;
   font-weight: 600;
   color: #0a0a0a;
 }
 
-.sar-dashboard-brand__agency {
+.sar-site-header__brand-agency {
+  margin-left: 2px;
   padding: 2px 7px;
   border-radius: 5px;
   background-color: #0b2a5b;
   color: #ffffff;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1.6;
 }
 
-.sar-dashboard-nav {
+.sar-site-header__nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  flex: 1;
 }
 
-.sar-dashboard-nav__link {
+.sar-site-header__nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 13px;
@@ -79,92 +103,330 @@
   transition: background-color 0.12s, color 0.12s;
 }
 
-.sar-dashboard-nav__link:hover {
+.sar-site-header__nav-link:hover {
   background-color: #0b2a5b;
   color: #ffffff;
 }
 
-.sar-dashboard-header__sub {
+.sar-site-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.sar-live-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #d5d9df;
+}
+
+.sar-live-pill__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #b42318;
+  flex-shrink: 0;
+  animation: sar-pulse 1.5s infinite;
+}
+
+.sar-live-pill__text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0a0a0a;
+}
+
+.sar-site-header__divider-sm {
+  width: 1px;
+  height: 24px;
+  background-color: #d5d9df;
+  flex-shrink: 0;
+}
+
+.sar-signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5b6470;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.sar-signout-btn:hover {
+  background-color: #0b2a5b;
+  color: #ffffff;
+}
+
+/* ── Tier 2: Incident Sub-header Bar ───────────────────────────────────────── */
+.sar-site-header__tier2 {
   min-height: 56px;
+  background-color: #ffffff;
   border-bottom: 1px solid #d5d9df;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 8px 24px;
   flex-wrap: wrap;
 }
 
-.sar-dashboard-incident-info {
+.sar-site-header__shield {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background-color: #0b2a5b;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.sar-dashboard-incident-title-row {
+.sar-site-header__incident {
+  flex: 1;
+  min-width: 200px;
+}
+
+.sar-site-header__incident-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.sar-dashboard-incident-name {
+.sar-site-header__incident-name {
   font-size: 15px;
   font-weight: 600;
   color: #0a0a0a;
+  white-space: nowrap;
 }
 
-.sar-dashboard-badge {
+.sar-badge-active {
   padding: 2px 7px;
   border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.sar-dashboard-badge--active {
   background-color: #b42318;
   color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+  flex-shrink: 0;
 }
 
-.sar-dashboard-badge--op {
+.sar-badge-op {
+  padding: 2px 7px;
+  border-radius: 4px;
   background-color: #ffffff;
   color: #0b2a5b;
   border: 1px solid #0b2a5b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  flex-shrink: 0;
 }
 
-.sar-dashboard-incident-meta {
-  margin: 0;
+.sar-site-header__incident-sub {
+  margin: 1px 0 0;
   font-size: 12px;
   color: #5b6470;
+  white-space: nowrap;
 }
 
-.sar-add-team-btn {
+.sar-site-header__divider-md {
+  width: 1px;
+  height: 32px;
+  background-color: #d5d9df;
+  flex-shrink: 0;
+}
+
+/* ── Stat Chips (Personnel / Teams) ────────────────────────────────────────── */
+.sar-site-header__stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.sar-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sar-stat-chip__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  border: 1px solid #d5d9df;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sar-stat-chip__value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0a0a0a;
+  line-height: 1;
+}
+
+.sar-stat-chip__label {
+  font-size: 11px;
+  color: #5b6470;
+  line-height: 1.2;
+}
+
+/* ── Action Buttons (Add Team, Search for Qualifications, ICS Forms) ──────── */
+.sar-site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sar-header-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 7px 14px;
   border-radius: 6px;
   font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.12s;
+}
+
+.sar-header-btn--primary {
+  padding: 7px 14px;
   font-weight: 600;
   color: #ffffff;
   background-color: #0b2a5b;
   border: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background-color 0.12s;
 }
 
-.sar-add-team-btn:hover {
-  background-color: #123a7a;
+.sar-header-btn--primary:hover {
+  background-color: #0d3470;
 }
 
-/* ── Dashboard Content ─────────────────────────────────────────────────────── */
+.sar-header-btn--outline {
+  padding: 6px 13px;
+  font-weight: 600;
+  color: #0b2a5b;
+  background-color: #ffffff;
+  border: 1px solid #0b2a5b;
+}
+
+.sar-header-btn--outline:hover {
+  background-color: #eef1f6;
+}
+
+.sar-header-btn--secondary {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0b2a5b;
+  background-color: #ffffff;
+  border: 1px solid #d5d9df;
+}
+
+.sar-header-btn--secondary:hover {
+  background-color: #f3f4f6;
+}
+
+/* ── Tier 3: Status & Medical Legend Bar ───────────────────────────────────── */
+.sar-status-legend {
+  background-color: #ffffff;
+  border-bottom: 1px solid #d5d9df;
+  padding: 7px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sar-legend-heading {
+  font-size: 11px;
+  color: #5b6470;
+}
+
+.sar-legend-status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sar-legend-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sar-legend-status-text {
+  font-size: 12px;
+  color: #5b6470;
+}
+
+.sar-legend-status-name {
+  color: #0a0a0a;
+}
+
+.sar-legend-divider {
+  width: 1px;
+  height: 14px;
+  background-color: #d5d9df;
+  flex-shrink: 0;
+}
+
+.sar-legend-med-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sar-med-qual-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px 1px 4px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sar-legend-med-label {
+  font-size: 11px;
+  color: #5b6470;
+}
+
+/* ── Main Dashboard Body Container ─────────────────────────────────────────── */
 .sar-dashboard-main {
+  padding-top: 148px;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 24px 56px;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 56px;
 }
 
+/* ── Dashboard Team Cards ───────────────────────────────────────────────────── */
 .sar-dashboard-empty {
   padding: 28px 20px;
   text-align: center;

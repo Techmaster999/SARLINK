@@ -7,6 +7,18 @@ import {
   TEAM_PALETTE,
   DEFAULT_INCIDENT_VOLUNTEERS,
 } from "./CreateTeamModal";
+import {
+  DashboardHeader,
+  SiteHeader,
+  StatChip,
+  StatusLegend,
+  MedQualLegend,
+  MedQualBadge,
+  MED_QUALS,
+  SHOWN_STATUSES,
+  INCIDENT_TYPES,
+  INCIDENT_LEVELS,
+} from "./DashboardHeader";
 import "./Dashboard.css";
 
 export {
@@ -16,17 +28,30 @@ export {
   calculateLocalNextTeamNumber,
   TEAM_PALETTE,
   DEFAULT_INCIDENT_VOLUNTEERS,
+  DashboardHeader,
+  SiteHeader,
+  StatChip,
+  StatusLegend,
+  MedQualLegend,
+  MedQualBadge,
+  MED_QUALS,
+  SHOWN_STATUSES,
+  INCIDENT_TYPES,
+  INCIDENT_LEVELS,
 };
 
-/**
- * Incident Dashboard page shell with "Add Team" button and CreateTeamModal (DT-48).
- * Kept minimal so other dashboard subtasks can plug in cleanly.
- */
 export default function Dashboard({
   incidentName = "Operation Granite Peak",
+  incidentType = "lost_hiker",
+  incidentLevel = "2",
   op = "1",
   initialTeams = [],
   volunteers = DEFAULT_INCIDENT_VOLUNTEERS,
+  totalPersonnel = 26,
+  totalTeams,
+  onAddTeam,
+  onSearchQuals,
+  onSignOut,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [teams, setTeams] = useState(initialTeams);
@@ -40,75 +65,35 @@ export default function Dashboard({
     setIsOpen(false);
   }, []);
 
+  const handleAddTeam = useCallback(() => {
+    if (typeof onAddTeam === "function") {
+      onAddTeam();
+    }
+    setIsOpen(true);
+  }, [onAddTeam]);
+
+  const displayedTeamCount =
+    typeof totalTeams === "number" ? totalTeams : teams.length;
+
   return (
     <div className="sar-dashboard">
-      {/* Header bar with Add Team button */}
-      <header className="sar-dashboard-header">
-        <div className="sar-dashboard-header__top">
-          <div className="sar-dashboard-brand">
-            <span className="sar-dashboard-logo" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2L21 7V17L12 22L3 17V7L12 2Z"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <circle cx="12" cy="12" r="3" stroke="white" strokeWidth="1.5" />
-              </svg>
-            </span>
-            <span className="sar-dashboard-brand__name">SARLINK</span>
-            <span className="sar-dashboard-brand__agency">EDSAR</span>
-          </div>
+      <DashboardHeader
+        incidentName={incidentName}
+        incidentType={incidentType}
+        incidentLevel={incidentLevel}
+        op={op}
+        totalPersonnel={totalPersonnel}
+        totalTeams={displayedTeamCount}
+        onAddTeam={handleAddTeam}
+        onSearchQuals={onSearchQuals}
+        onSignOut={onSignOut}
+      />
 
-          <nav className="sar-dashboard-nav" aria-label="Primary">
-            <a href="/incident-hub" className="sar-dashboard-nav__link">
-              Incidents
-            </a>
-          </nav>
-        </div>
-
-        <div className="sar-dashboard-header__sub">
-          <div className="sar-dashboard-incident-info">
-            <div className="sar-dashboard-incident-title-row">
-              <span className="sar-dashboard-incident-name">{incidentName}</span>
-              <span className="sar-dashboard-badge sar-dashboard-badge--active">
-                ACTIVE
-              </span>
-              <span className="sar-dashboard-badge sar-dashboard-badge--op">
-                OP {op}
-              </span>
-            </div>
-            <p className="sar-dashboard-incident-meta">
-              ICS · Lost Hiker / SAR · Operational Period {op}
-            </p>
-          </div>
-
-          <div className="sar-dashboard-actions">
-            <button
-              type="button"
-              className="sar-add-team-btn"
-              onClick={() => setIsOpen(true)}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path
-                  d="M7 2v10M2 7h10"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Add Team
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main content area */}
       <main className="sar-dashboard-main">
         {teams.length === 0 ? (
           <div className="sar-dashboard-empty">
-            No teams formed yet for OP {op}. Click <strong>Add Team</strong> to create the first team (starting at 101).
+            No teams formed yet for OP {op}. Click <strong>Add Team</strong> to
+            create the first team (starting at 101).
           </div>
         ) : (
           <div className="sar-teams-grid">
@@ -136,9 +121,7 @@ export default function Dashboard({
                   className="sar-team-card__body"
                   style={{ backgroundColor: team.tint }}
                 >
-                  <p className="sar-team-card__empty">
-                    No members assigned yet.
-                  </p>
+                  <p className="sar-team-card__empty">No members assigned yet.</p>
                 </div>
               </div>
             ))}
@@ -146,7 +129,6 @@ export default function Dashboard({
         )}
       </main>
 
-      {/* Create Team Modal */}
       <CreateTeamModal
         isOpen={isOpen}
         onClose={closeCreateTeamModal}
@@ -158,4 +140,3 @@ export default function Dashboard({
     </div>
   );
 }
-

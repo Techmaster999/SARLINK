@@ -17,7 +17,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./server/db/migrations/001_create_incidents.sql:/docker-entrypoint-initdb.d/001_create_incidents.sql:ro
-      - ./server/db/seeds/dev_incidents.sql:/docker-entrypoint-initdb.d/002_dev_incidents.sql:ro
+      - ./server/db/migrations/002_create_teams.sql:/docker-entrypoint-initdb.d/002_create_teams.sql:ro
+      - ./server/db/migrations/003_create_team_members.sql:/docker-entrypoint-initdb.d/003_create_team_members.sql:ro
+      - ./server/db/seeds/dev_incidents.sql:/docker-entrypoint-initdb.d/004_dev_incidents.sql:ro
 
   client:
     build:

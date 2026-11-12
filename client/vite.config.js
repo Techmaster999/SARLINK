@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api/incidents': 'http://api-server:8888',
+        '/api/teams': 'http://api-server:8888',
+        // Live dashboard updates (Socket.IO). Long-polling works through this proxy;
+        // websocket upgrades need an httpServer, which Vite's middleware mode doesn't have.
+        '/socket.io': { target: 'http://api-server:8888', ws: true },
       },
     },
     define: {
