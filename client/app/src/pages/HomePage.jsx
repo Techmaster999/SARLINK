@@ -7,7 +7,6 @@ export default function HomePage() {
 
   useEffect(() => {
     fetch('/api/auth/session')
-      .then((response) => response.json())
       .then(async (response) => {
         const session = await response.json();
         if (!response.ok && session.error === 'session_expired') {

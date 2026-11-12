@@ -437,6 +437,48 @@
   border-radius: 10px;
 }
 
+.sar-drag-mode-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+  padding: 8px 13px 8px 10px;
+  border: 1px solid #9ac7b0;
+  border-radius: 7px;
+  background: #e8f6ed;
+  color: #155d39;
+  box-shadow: 0 2px 6px rgba(21, 93, 57, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.sar-drag-mode-indicator__signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 15px;
+  padding: 0 2px;
+}
+
+.sar-drag-mode-indicator__signal span {
+  width: 3px;
+  border-radius: 2px;
+  background: #2d9a5d;
+}
+
+.sar-drag-mode-indicator__signal span:nth-child(1) {
+  height: 6px;
+}
+
+.sar-drag-mode-indicator__signal span:nth-child(2) {
+  height: 11px;
+}
+
+.sar-drag-mode-indicator__signal span:nth-child(3) {
+  height: 15px;
+}
+
 .sar-teams-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

@@ -40,6 +40,21 @@ export {
   INCIDENT_LEVELS,
 };
 
+export function DragModeIndicator({ isDragEnabled }) {
+  if (!isDragEnabled) return null;
+
+  return (
+    <div className="sar-drag-mode-indicator" role="status" aria-live="polite">
+      <span className="sar-drag-mode-indicator__signal" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </span>
+      <span>Drag and drop is on</span>
+    </div>
+  );
+}
+
 export default function Dashboard({
   incidentName = "Operation Granite Peak",
   incidentType = "lost_hiker",
@@ -52,6 +67,8 @@ export default function Dashboard({
   onAddTeam,
   onSearchQuals,
   onSignOut,
+  isDragEnabled = false,
+  isIstAccount = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [teams, setTeams] = useState(initialTeams);
@@ -90,6 +107,7 @@ export default function Dashboard({
       />
 
       <main className="sar-dashboard-main">
+        {isIstAccount && <DragModeIndicator isDragEnabled={isDragEnabled} />}
         {teams.length === 0 ? (
           <div className="sar-dashboard-empty">
             No teams formed yet for OP {op}. Click <strong>Add Team</strong> to
