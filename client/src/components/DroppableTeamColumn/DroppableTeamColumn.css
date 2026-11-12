@@ -1,0 +1,29 @@
+.sar-team-column {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 0;
+  background-color: var(--team-tint);
+  box-shadow: none;
+  transition: background-color 0.15s, box-shadow 0.15s, border-radius 0.15s;
+}
+
+.sar-team-column--drop-target {
+  border-radius: 6px;
+  background-color: var(--team-active-tint);
+  box-shadow: inset 0 0 0 2px var(--team-active-border);
+}
+
+.sar-team-column__drop-placeholder {
+  border: 2px dashed var(--team-accent);
+  border-radius: 6px;
+  padding: 7px 12px;
+  color: var(--team-accent);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  opacity: 0.8;
+}
