@@ -11,6 +11,7 @@ import {
   INCIDENT_TYPES,
   INCIDENT_LEVELS,
 } from "./DashboardHeader";
+import { DraggableVolunteerTab } from "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab";
 import "./Dashboard.css";
 
 export {
