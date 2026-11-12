@@ -22,6 +22,18 @@ export async function reassignVolunteerToTeam(volunteerId, newTeamId) {
   }
 }
 
+export async function saveVolunteerOrder(teamId, orderedVolunteerIds) {
+  try {
+    const { data } = await api.patch(
+      `/teams/${encodeURIComponent(teamId)}/volunteer-order`,
+      { orderedVolunteerIds },
+    );
+    return data;
+  } catch (err) {
+    throw toVolunteerOrderError(err);
+  }
+}
+
 function toReassignError(err) {
   const base = "Couldn't reassign the volunteer.";
 
@@ -36,5 +48,19 @@ function toReassignError(err) {
     return friendly;
   }
   // No response: server down, wrong URL, offline, or timed out
+  return new Error(`${base} Couldn't reach the server. Check your connection and try again.`);
+}
+
+function toVolunteerOrderError(err) {
+  const base = "Couldn't save the volunteer order.";
+
+  if (err.response) {
+    const { status, data } = err.response;
+    const detail = status < 500 && data?.message && data.message !== base ? ` ${data.message}` : "";
+    const friendly = new Error(`${base}${detail}`);
+    friendly.status = status;
+    friendly.fieldErrors = data?.errors;
+    return friendly;
+  }
   return new Error(`${base} Couldn't reach the server. Check your connection and try again.`);
 }
