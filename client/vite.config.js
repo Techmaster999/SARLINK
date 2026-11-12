@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api/incidents': 'http://api-server:8888',
+        '/api/teams': 'http://api-server:8888',
       },
     },
     define: {

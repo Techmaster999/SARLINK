@@ -1,0 +1,11 @@
+import { createTeam as createTeamService } from "../services/teamService.js";
+
+export async function createTeam(req, res, next) {
+    try {
+        const { name, leaderId, color, incidentId } = req.body;
+        const team = await createTeamService(name, leaderId, color, incidentId, { db: req.app.locals.db });
+        res.status(201).location(`/api/teams/${team.id}`).json(team);
+    } catch (err) {
+        next(err);
+    }
+}
