@@ -18,7 +18,7 @@ function getSocket() {
 
 /**
  * Calls `handler` whenever any user moves a volunteer to a different team.
- * Payload: { volunteerId, teamId, previousTeamId, incidentId, assignedAt }.
+ * Payload: { volunteerId, teamId, previousTeamId, incidentId, assignedAt, status }.
  * Dashboards should remove the volunteer from `previousTeamId` and add them to `teamId`.
  *
  * @returns {() => void} Call it to stop listening (e.g. in a React effect cleanup).
