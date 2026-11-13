@@ -1,4 +1,8 @@
-import { createTeam as createTeamService, reassignVolunteerToTeam } from "../services/teamService.js";
+import {
+    createTeam as createTeamService,
+    reassignVolunteerToTeam,
+    saveTeamVolunteerOrder,
+} from "../services/teamService.js";
 
 export async function createTeam(req, res, next) {
     try {
@@ -15,6 +19,18 @@ export async function reassignVolunteer(req, res, next) {
         const { volunteerId, teamId } = res.locals.reassignment; // set by validateVolunteerReassignment
         const membership = await reassignVolunteerToTeam(volunteerId, teamId, { db: req.app.locals.db });
         res.status(200).json(membership);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function saveVolunteerOrder(req, res, next) {
+    try {
+        const { teamId, orderedVolunteerIds } = res.locals.volunteerOrder;
+        const result = await saveTeamVolunteerOrder(teamId, orderedVolunteerIds, {
+            db: req.app.locals.db,
+        });
+        res.status(200).json(result);
     } catch (err) {
         next(err);
     }

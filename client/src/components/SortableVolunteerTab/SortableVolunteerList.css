@@ -1,0 +1,11 @@
+.sar-sortable-volunteer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sar-sortable-volunteer-list__error {
+  margin: 6px 0 0;
+  color: #b42318;
+  font-size: 12px;
+}
