@@ -1,0 +1,38 @@
+.sar-volunteer-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #d5d9df;
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  color: #0a0a0a;
+  font: 500 13px/1.3 "Inter", system-ui, -apple-system, sans-serif;
+  user-select: none;
+  touch-action: none;
+}
+
+.sar-volunteer-tab[role="button"] {
+  cursor: grab;
+}
+
+.sar-volunteer-tab[role="button"]:active {
+  cursor: grabbing;
+}
+
+.sar-volunteer-tab:focus-visible {
+  outline: 2px solid #0b2a5b;
+  outline-offset: 2px;
+}
+
+.sar-volunteer-tab--dragging {
+  border-style: dashed;
+  opacity: 0.45;
+}
+
+.sar-volunteer-tab--overlay {
+  position: relative;
+  z-index: 1000;
+  pointer-events: none;
+}

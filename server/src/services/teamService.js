@@ -1,5 +1,8 @@
 import { findTeamById, insertTeam } from "../models/team.model.js";
-import { upsertTeamMembership } from "../models/teamMember.model.js";
+import {
+    saveTeamMemberOrder,
+    upsertTeamMembership,
+} from "../models/teamMember.model.js";
 import { saveVolunteerStatus } from "../models/volunteer.model.js";
 import { pool } from "../config/db.js";
 import { broadcast, EVENTS } from "../realtime/socket.js";
@@ -91,4 +94,24 @@ export async function reassignVolunteerToTeam(volunteerId, newTeamId, { db, noti
         notify(EVENTS.VOLUNTEER_REASSIGNED, membership);
     }
     return membership;
+}
+
+export async function saveTeamVolunteerOrder(teamId, orderedVolunteerIds, { db } = {}) {
+    const result = await saveTeamMemberOrder(teamId, orderedVolunteerIds, db);
+
+    if (!result.teamExists) {
+        throw new HttpError(404, "That team doesn't exist.", {
+            teamId: "That team doesn't exist.",
+        });
+    }
+    if (!result.orderValid || result.updatedCount !== orderedVolunteerIds.length) {
+        throw new HttpError(400, "The order must include every volunteer on this team.", {
+            orderedVolunteerIds: "The order must include every volunteer on this team.",
+        });
+    }
+
+    return {
+        teamId: Number(teamId),
+        orderedVolunteerIds,
+    };
 }

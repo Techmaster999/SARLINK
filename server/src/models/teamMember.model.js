@@ -28,6 +28,49 @@ export async function upsertTeamMembership(volunteerId, teamId, db = pool) {
   return toMembership(rows[0]);
 }
 
+export async function saveTeamMemberOrder(teamId, orderedVolunteerIds, db = pool) {
+  const { rows } = await db.query(
+    `WITH requested_order AS (
+       SELECT volunteer_id, (ordinality - 1)::integer AS position
+       FROM unnest($2::text[]) WITH ORDINALITY AS requested(volunteer_id, ordinality)
+     ),
+     order_validation AS (
+       SELECT
+         COUNT(*) = (SELECT COUNT(*) FROM team_members WHERE team_id = $1)
+         AND COUNT(DISTINCT volunteer_id) = COUNT(*)
+         AND NOT EXISTS (
+           SELECT 1
+           FROM requested_order requested
+           LEFT JOIN team_members membership
+             ON membership.volunteer_id = requested.volunteer_id
+            AND membership.team_id = $1
+           WHERE membership.volunteer_id IS NULL
+         ) AS is_valid
+       FROM requested_order
+     ),
+     updated_order AS (
+       UPDATE team_members AS membership
+       SET position = requested.position
+       FROM requested_order AS requested
+       CROSS JOIN order_validation
+       WHERE order_validation.is_valid
+         AND membership.team_id = $1
+         AND membership.volunteer_id = requested.volunteer_id
+       RETURNING membership.volunteer_id
+     )
+     SELECT EXISTS (SELECT 1 FROM teams WHERE id = $1) AS team_exists,
+            COALESCE((SELECT is_valid FROM order_validation), FALSE) AS order_valid,
+            (SELECT COUNT(*)::integer FROM updated_order) AS updated_count`,
+    [teamId, orderedVolunteerIds],
+  );
+  const row = rows[0];
+  return {
+    teamExists: row.team_exists,
+    orderValid: row.order_valid,
+    updatedCount: Number(row.updated_count),
+  };
+}
+
 // Database row (snake_case) → API shape (camelCase).
 function toMembership(row) {
   return {
