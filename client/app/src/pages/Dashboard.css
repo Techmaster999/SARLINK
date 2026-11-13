@@ -487,6 +487,513 @@
   color: #5b6470;
 }
 
+/* ── Board (Figma: CommandPostPanel, TeamCard, IncomingVolunteersPanel) ─────── */
+.sar-board {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 24px;
+}
+
+/* Figma: three team cards per row */
+.sar-board .sar-teams-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .sar-board .sar-teams-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .sar-board .sar-teams-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Team card header doubles as the collapse toggle */
+.sar-team-card__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border: none;
+  color: #ffffff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sar-team-card__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.sar-team-card__toggle .sar-team-card__leader {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sar-team-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.sar-team-card__count {
+  text-align: right;
+}
+
+.sar-team-card__count-value {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sar-team-card__count-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Member list + member row (shared by teams and command-post groups) */
+.sar-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 44px;
+  padding: 8px 10px;
+}
+
+.sar-member-list__empty {
+  margin: 0;
+  padding: 6px 4px;
+  font-size: 12px;
+  color: #5b6470;
+}
+
+.sar-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d5d9df;
+  background-color: #ffffff;
+}
+
+.sar-member__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sar-member__name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sar-member__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sar-member__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0a0a0a;
+  overflow-wrap: anywhere;
+}
+
+.sar-member__role {
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: #5b6470;
+}
+
+.sar-member__quals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Command Post panel */
+.sar-cp {
+  border-radius: 10px;
+  border: 2px solid #d5d9df;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.sar-cp__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background-color: #0b2a5b;
+  color: #ffffff;
+}
+
+.sar-cp__badge-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sar-cp__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.sar-cp__eyebrow {
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.sar-cp__ic-name {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.sar-cp__ic-role {
+  margin-top: 1px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sar-cp__stats {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.sar-cp__stat {
+  text-align: center;
+}
+
+.sar-cp__stat-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sar-cp__stat-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sar-cp__tag {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sar-cp__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.sar-cp__column--roster {
+  border-right: 1px solid #d5d9df;
+}
+
+.sar-cp__group-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #d5d9df;
+  background-color: #f8f9fb;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sar-cp__group-toggle[aria-expanded="false"] {
+  border-bottom: none;
+}
+
+.sar-cp__group-label {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0a0a0a;
+  text-align: left;
+}
+
+.sar-cp__group-detail {
+  font-size: 11px;
+  color: #5b6470;
+}
+
+.sar-cp__ic-row-wrap {
+  padding: 8px 10px 0;
+}
+
+.sar-cp__ic-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d5d9df;
+  background-color: #ffffff;
+}
+
+.sar-cp__ic-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #0b2a5b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sar-cp__ic-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.sar-cp__ic-tag {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: #0b2a5b15;
+  border: 1px solid #0b2a5b30;
+  color: #0b2a5b;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.sar-cp__ist-wrap {
+  padding: 0 10px 10px;
+}
+
+.sar-ist {
+  border-radius: 8px;
+  border: 1px solid;
+  overflow: hidden;
+}
+
+.sar-ist__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  color: #ffffff;
+}
+
+.sar-ist__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.sar-ist__sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sar-ist__count {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Incoming Volunteers panel */
+.sar-incoming {
+  border-radius: 10px;
+  border: 1px solid #d5d9df;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.sar-incoming__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border: none;
+  border-bottom: 1px solid #d5d9df;
+  background-color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sar-incoming__toggle[aria-expanded="false"] {
+  border-bottom: none;
+}
+
+.sar-incoming__title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a0a0a;
+  text-align: left;
+}
+
+.sar-incoming__summary {
+  margin-right: 4px;
+  font-size: 12px;
+  color: #5b6470;
+}
+
+.sar-incoming__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 20px;
+  font-size: 13px;
+  color: #5b6470;
+}
+
+.sar-incoming__head,
+.sar-incoming__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 140px 110px;
+  align-items: center;
+  padding: 11px 20px;
+}
+
+.sar-incoming__head {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background-color: #f3f4f6;
+  border-bottom: 1px solid #d5d9df;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5b6470;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sar-incoming__row {
+  border-bottom: 1px solid #d5d9df;
+  transition: background-color 0.12s;
+}
+
+.sar-incoming__row:last-child {
+  border-bottom: none;
+}
+
+.sar-incoming__row:hover {
+  background-color: #f8f9fb;
+}
+
+.sar-incoming__who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sar-incoming__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  border: 1px solid #d5d9df;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sar-incoming__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0a0a0a;
+  overflow-wrap: anywhere;
+}
+
+.sar-incoming__cell {
+  font-size: 12px;
+  color: #5b6470;
+}
+
+.sar-incoming__eta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sar-incoming__eta-pill {
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .sar-cp__header {
+    flex-wrap: wrap;
+  }
+
+  .sar-cp__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .sar-cp__column--roster {
+    border-right: none;
+    border-bottom: 1px solid #d5d9df;
+  }
+
+  .sar-incoming__head {
+    display: none;
+  }
+
+  .sar-incoming__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+
+  .sar-incoming__cell {
+    grid-column: 1;
+    padding-left: 38px;
+  }
+
+  .sar-incoming__eta {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .sar-dashboard-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 /* ── Create Team Modal (DT-48) ─────────────────────────────────────────────── */
 .ctm-overlay-root {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
