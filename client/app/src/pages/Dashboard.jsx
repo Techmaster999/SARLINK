@@ -21,6 +21,15 @@ import {
 } from "./DashboardHeader";
 import { DraggableVolunteerTab } from "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab";
 import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
+import { OperatingTeamCard } from "./OperatingTeamCard";
+import { CommandPostCard } from "./CommandPostCard";
+import { IncomingVolunteersBox } from "./IncomingVolunteersBox";
+import {
+  SAMPLE_COMMAND_POST,
+  SAMPLE_INCIDENT_COMMANDER,
+  SAMPLE_INCOMING_VOLUNTEERS,
+  SAMPLE_TEAMS,
+} from "./dashboardSampleData";
 import "./Dashboard.css";
 
 export {
@@ -47,9 +56,12 @@ export default function Dashboard({
   incidentType = "lost_hiker",
   incidentLevel = "2",
   op = "1",
-  initialTeams = [],
+  initialTeams = SAMPLE_TEAMS,
   volunteers = DEFAULT_INCIDENT_VOLUNTEERS,
-  totalPersonnel = 26,
+  incidentCommander = SAMPLE_INCIDENT_COMMANDER,
+  commandPost = SAMPLE_COMMAND_POST,
+  incomingVolunteers = SAMPLE_INCOMING_VOLUNTEERS,
+  totalPersonnel,
   totalTeams,
   onAddTeam,
   onSearchQuals,
@@ -63,9 +75,15 @@ export default function Dashboard({
   }, []);
 
   const handleCreateTeam = useCallback((newTeam) => {
-    setTeams((prev) => [...prev, newTeam]);
+    // Team numbers are unique within the operational period.
+    setTeams((prev) =>
+      prev.some((t) => String(t.number) === String(newTeam.number)) ? prev : [...prev, newTeam],
+    );
     setIsOpen(false);
   }, []);
+
+  // Teams are shown in number order (101, 102, …).
+  const sortedTeams = [...teams].sort((a, b) => Number(a.number) - Number(b.number));
 
   const handleAddTeam = useCallback(() => {
     if (typeof onAddTeam === "function") {
@@ -76,6 +94,15 @@ export default function Dashboard({
 
   const displayedTeamCount =
     typeof totalTeams === "number" ? totalTeams : teams.length;
+  // Everyone on a team plus everyone at the command post (the IC counts as one).
+  const boardPersonnel =
+    teams.reduce((sum, t) => sum + (Array.isArray(t.members) ? t.members.length : 0), 0) +
+    1 +
+    (commandPost?.roster?.length ?? 0) +
+    (commandPost?.ist?.length ?? 0) +
+    (commandPost?.standby?.length ?? 0);
+  const displayedPersonnel =
+    typeof totalPersonnel === "number" ? totalPersonnel : boardPersonnel;
 
   return (
     <div className="sar-dashboard">
@@ -84,7 +111,7 @@ export default function Dashboard({
         incidentType={incidentType}
         incidentLevel={incidentLevel}
         op={op}
-        totalPersonnel={totalPersonnel}
+        totalPersonnel={displayedPersonnel}
         totalTeams={displayedTeamCount}
         onAddTeam={handleAddTeam}
         onSearchQuals={onSearchQuals}
@@ -92,43 +119,23 @@ export default function Dashboard({
       />
 
       <main className="sar-dashboard-main">
-        {teams.length === 0 ? (
-          <div className="sar-dashboard-empty">
-            No teams formed yet for OP {op}. Click <strong>Add Team</strong> to
-            create the first team (starting at 101).
-          </div>
-        ) : (
-          <div className="sar-teams-grid">
-            {teams.map((team) => (
-              <div
-                key={team.id}
-                className="sar-team-card"
-                style={{ borderColor: `${team.accent}40` }}
-              >
-                <div
-                  className="sar-team-card__header"
-                  style={{ backgroundColor: team.accent }}
-                >
-                  <div>
-                    <div className="sar-team-card__eyebrow">Team</div>
-                    <div className="sar-team-card__name">
-                      {team.name || team.number}
-                    </div>
-                    <div className="sar-team-card__leader">
-                      Leader: {team.leader || "Unassigned"}
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="sar-team-card__body"
-                  style={{ backgroundColor: team.tint }}
-                >
-                  <p className="sar-team-card__empty">No members assigned yet.</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="sar-board">
+          <CommandPostCard icName={incidentCommander} commandPost={commandPost} />
+
+          {sortedTeams.length === 0 ? (
+            <div className="sar-dashboard-empty">
+              No teams formed yet for OP {op}. Use Add Team to form the first one.
+            </div>
+          ) : (
+            <div className="sar-teams-grid">
+              {sortedTeams.map((team) => (
+                <OperatingTeamCard key={team.id} team={team} />
+              ))}
+            </div>
+          )}
+
+          <IncomingVolunteersBox volunteers={incomingVolunteers} />
+        </div>
       </main>
 
       <CreateTeamModal
