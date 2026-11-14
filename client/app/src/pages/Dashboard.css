@@ -851,16 +851,28 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 3px solid transparent;
-  cursor: pointer;
+  border: none;
   padding: 0;
-  transition: box-shadow 0.12s, border-color 0.12s;
+  cursor: pointer;
+  background-color: var(--swatch);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.12s, transform 0.12s;
+}
+
+.ctm-color-swatch:hover {
+  transform: scale(1.08);
 }
 
 .ctm-color-swatch--selected {
-  border-color: #0a0a0a;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--swatch);
 }
 
+.ctm-color-swatch:focus-visible {
+  outline: 2px solid #0b2a5b;
+  outline-offset: 3px;
+}
 .ctm-color-preview {
   margin-top: 10px;
   padding: 8px 12px;
