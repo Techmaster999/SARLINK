@@ -165,6 +165,51 @@ export function TeamNameInput({ value, onChange, error, inputRef, onBlur }) {
   );
 }
 
+/* DT-147 ColorPicker component */
+export function ColorPicker({ selectedColor, onSelect, colors = TEAM_PALETTE }) {
+  const refs = useRef([]);
+
+  const handleKeyDown = (e, i) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const next = (i + step + colors.length) % colors.length;
+    onSelect(colors[next]);
+    refs.current[next]?.focus();
+  };
+
+  return (
+    <div className="ctm-color-list" role="radiogroup" aria-label="Team Color">
+      {colors.map((c, i) => {
+        const selected = c.name === selectedColor?.name;
+        return (
+          <button
+            key={c.name}
+            ref={(el) => (refs.current[i] = el)}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            aria-label={c.name}
+            title={c.name}
+            tabIndex={selected ? 0 : -1}
+            className={`ctm-color-swatch ${selected ? "ctm-color-swatch--selected" : ""}`}
+            style={{ "--swatch": c.accent }}
+            onClick={() => onSelect(c)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+          >
+            {selected && (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2.5 7.5l3 3 6-7" stroke="#fff" strokeWidth="2"
+                  strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /**
  * CreateTeamModal
  * Subtask DT-48: Render pop up displaying options for creating a new team:
@@ -248,6 +293,11 @@ export function CreateTeamModal({
   hasUserEditedRef.current = true;
   setTeamName(val);
   setError(validateTeamName(val, existingTeams));
+};
+
+const handleColorSelect = (color) => {
+  const idx = TEAM_PALETTE.findIndex((c) => c.name === color.name);
+  if (idx >= 0) setColorIdx(idx);
 };
 
 const handleFormSubmit = (e) => {
@@ -364,30 +414,7 @@ const handleFormSubmit = (e) => {
             {/* Team Color Options */}
             <div className="ctm-field">
               <span className="ctm-label">Team Color</span>
-              <div className="ctm-color-list" role="radiogroup" aria-label="Team Color">
-                {TEAM_PALETTE.map((p, i) => {
-                  const selected = i === colorIdx;
-                  return (
-                    <button
-                      key={p.name}
-                      type="button"
-                      title={p.name}
-                      aria-label={p.name}
-                      aria-pressed={selected}
-                      className={`ctm-color-swatch ${
-                        selected ? "ctm-color-swatch--selected" : ""
-                      }`}
-                      onClick={() => setColorIdx(i)}
-                      style={{
-                        backgroundColor: p.accent,
-                        boxShadow: selected
-                          ? `0 0 0 2px #FFFFFF, 0 0 0 4px ${p.accent}`
-                          : "none",
-                      }}
-                    />
-                  );
-                })}
-              </div>
+              <ColorPicker selectedColor={palette} onSelect={handleColorSelect} />
 
               {/* Tint preview strip */}
               <div
