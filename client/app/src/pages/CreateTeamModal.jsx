@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import "./Dashboard.css";
 
+export const MAX_TEAM_NAME_LENGTH = 50;
+
 // ── Team color palette (from Dashboard Figma design) ──────────────────────────
 export const TEAM_PALETTE = [
   { accent: "#3558A8", tint: "#EEF3FF", name: "Navy" },
@@ -109,6 +111,60 @@ export function closeCreateTeamModal(callbackOrSetter) {
   return false;
 }
 
+/* DT-146 TeamNameInput and validateTeamName */
+export function validateTeamName(name, existingTeams = []) {
+  const trimmed = String(name ?? "").trim();
+
+  if (trimmed === "") {
+    return "Enter a team name or number.";
+  }
+
+  if (trimmed.length > MAX_TEAM_NAME_LENGTH) {
+    return `Team name must be ${MAX_TEAM_NAME_LENGTH} characters or fewer.`;
+  }
+
+  const isTaken = (Array.isArray(existingTeams) ? existingTeams : []).some(
+    (t) => String(t?.name ?? "").trim().toLowerCase() === trimmed.toLowerCase()
+  );
+  if (isTaken) {
+    return "This team name is already in use.";
+  }
+
+  return "";
+}
+
+export function TeamNameInput({ value, onChange, error, inputRef, onBlur }) {
+  return (
+    <div className="ctm-field">
+      <label htmlFor="sar-team-name" className="ctm-label">
+        Team Name <span className="ctm-required">*</span>
+      </label>
+      <input
+        id="sar-team-name"
+        ref={inputRef}
+        type="text"
+        className={`ctm-input ctm-input--name ${error ? "ctm-input--error" : ""}`}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        maxLength={MAX_TEAM_NAME_LENGTH}   // can't type more than 50
+        required
+        aria-required="true"
+        aria-invalid={!!error}
+        aria-describedby="sar-team-name-msg"
+        placeholder="e.g. 101"
+      />
+      {error ? (
+        <p id="sar-team-name-msg" role="alert" className="ctm-error">{error}</p>
+      ) : (
+        <p id="sar-team-name-msg" className="ctm-hint">
+          Every team number starts with the operational period number. You can edit this name if needed. ({value.length}/{MAX_TEAM_NAME_LENGTH})
+        </p>
+      )}
+    </div>
+  );
+}
+
 /**
  * CreateTeamModal
  * Subtask DT-48: Render pop up displaying options for creating a new team:
@@ -187,41 +243,38 @@ export function CreateTeamModal({
   const palette = TEAM_PALETTE[colorIdx] || TEAM_PALETTE[0];
   const isNameEmpty = teamName.trim() === "";
 
-  const handleNameChange = (e) => {
-    const val = e.target.value;
-    hasUserEditedRef.current = true;
-    setTeamName(val);
-    if (val.trim() === "") {
-      setError("A team name is required.");
-    } else {
-      setError("");
-    }
-  };
+  const handleTeamNameChange = (e) => {
+  const val = e.target.value.slice(0, MAX_TEAM_NAME_LENGTH);
+  hasUserEditedRef.current = true;
+  setTeamName(val);
+  setError(validateTeamName(val, existingTeams));
+};
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    const trimmedName = teamName.trim();
-    if (!trimmedName) {
-      setError("A team name is required.");
-      nameInputRef.current?.focus?.({ preventScroll: true });
-      return;
-    }
+const handleFormSubmit = (e) => {
+  e.preventDefault();
+  const validationError = validateTeamName(teamName, existingTeams);
+  if (validationError) {
+    setError(validationError);
+    nameInputRef.current?.focus?.({ preventScroll: true });
+    return;
+  }
 
-    const submitHandler = onSubmit || onConfirm;
-    if (typeof submitHandler === "function") {
-      submitHandler({
-        id: `team-${trimmedName}-${Date.now()}`,
-        name: trimmedName,
-        number: trimmedName,
-        slotNumber,
-        leader: leader.trim() || "Unassigned",
-        color: palette.name,
-        accent: palette.accent,
-        tint: palette.tint,
-        members: [],
-      });
-    }
-  };
+  const trimmedName = teamName.trim();
+  const submitHandler = onSubmit || onConfirm;
+  if (typeof submitHandler === "function") {
+    submitHandler({
+      id: `team-${trimmedName}-${Date.now()}`,
+      name: trimmedName,
+      number: trimmedName,
+      slotNumber,
+      leader: leader.trim() || "Unassigned",
+      color: palette.name,
+      accent: palette.accent,
+      tint: palette.tint,
+      members: [],
+    });
+  }
+};
 
   return (
     <div className="ctm-overlay-root">
@@ -274,36 +327,13 @@ export function CreateTeamModal({
         <form onSubmit={handleFormSubmit} noValidate>
           <div className="ctm-body">
             {/* Team Name */}
-            <div className="ctm-field">
-              <label htmlFor="sar-team-name" className="ctm-label">
-                Team Name <span className="ctm-required">*</span>
-              </label>
-              <input
-                id="sar-team-name"
-                ref={nameInputRef}
-                type="text"
-                className={`ctm-input ctm-input--name ${
-                  error ? "ctm-input--error" : ""
-                }`}
+              <TeamNameInput
                 value={teamName}
-                onChange={handleNameChange}
-                onBlur={() => {
-                  if (teamName.trim() === "") {
-                    setError("A team name is required.");
-                  }
-                }}
-                placeholder="e.g. 101"
+                onChange={handleTeamNameChange}
+                error={error}
+                inputRef={nameInputRef}
+                onBlur={() => setError(validateTeamName(teamName, existingTeams))}
               />
-              {error ? (
-                <p role="alert" className="ctm-error">
-                  {error}
-                </p>
-              ) : (
-                <p className="ctm-hint">
-                  Pre-filled with the next team number starting at 101. You can edit this name if needed.
-                </p>
-              )}
-            </div>
 
             {/* Team Leader Dropdown */}
             <div className="ctm-field">
@@ -393,7 +423,7 @@ export function CreateTeamModal({
             <button
               type="submit"
               className="ctm-btn ctm-btn--submit"
-              disabled={isNameEmpty}
+              disabled={isNameEmpty || !!error}
               style={{
                 backgroundColor: palette.accent,
               }}
