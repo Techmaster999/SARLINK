@@ -1,4 +1,4 @@
-import { findTeamById, insertTeam } from "../models/team.model.js";
+import { findTeamById, findTeamsByIncident, insertTeam } from "../models/team.model.js";
 import {
     saveTeamMemberOrder,
     upsertTeamMembership,
@@ -35,9 +35,11 @@ export async function updateVolunteerStatus(volunteerId, teamId, { db = pool } =
 }
 
 /** Saves a new team linked to the given incident and returns it (with its new ID). */
-export async function createTeam(name, leaderId, color, incidentId, { db } = {}) {
+export async function createTeam(name, leaderId, color, incidentId, { db, notify = broadcast } = {}) {
     try {
-        return await insertTeam({ name, leaderId, color, incidentId }, db);
+        const team = await insertTeam({ name, leaderId, color, incidentId }, db);
+        notify(EVENTS.TEAM_CREATED, team);
+        return team;
     } catch (err) {
         if (err.code === UNIQUE_VIOLATION && err.constraint === "teams_incident_name_key") {
             throw new HttpError(409, "A team with this name already exists for this incident.", {
@@ -54,6 +56,10 @@ export async function createTeam(name, leaderId, color, incidentId, { db } = {})
         }
         throw err; // unexpected -> 500 via the error handler
     }
+}
+
+export async function listTeamsByIncident(incidentId, { db } = {}) {
+    return findTeamsByIncident(incidentId, db);
 }
 
 /**

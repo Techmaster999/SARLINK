@@ -1,11 +1,13 @@
 import { Router } from 'express';
-import { createTeam, reassignVolunteer, saveVolunteerOrder } from '../controllers/teamController.js';
+import { createTeam, listTeams, reassignVolunteer, saveVolunteerOrder } from '../controllers/teamController.js';
 import { requireIst } from '../middleware/requireIst.js';
 import { validateTeam } from '../middleware/validateTeam.js';
 import { validateVolunteerReassignment } from '../middleware/validateVolunteerReassignment.js';
 import { validateVolunteerOrder } from '../middleware/validateVolunteerOrder.js';
 
 const router = Router();
+
+router.get('/', listTeams);
 
 router.post('/', requireIst, validateTeam, createTeam);
 

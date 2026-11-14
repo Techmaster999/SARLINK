@@ -1,8 +1,19 @@
 import {
     createTeam as createTeamService,
+    listTeamsByIncident,
     reassignVolunteerToTeam,
     saveTeamVolunteerOrder,
 } from "../services/teamService.js";
+
+export async function listTeams(req, res, next) {
+    try {
+        const incidentId = Number(req.query.incidentId || req.params.incidentId || 1);
+        const teams = await listTeamsByIncident(incidentId, { db: req.app.locals.db });
+        res.status(200).json(teams);
+    } catch (err) {
+        next(err);
+    }
+}
 
 export async function createTeam(req, res, next) {
     try {

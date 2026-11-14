@@ -21,6 +21,17 @@ export async function findTeamById(teamId, db = pool) {
   return rows[0] ?? null;
 }
 
+export async function findTeamsByIncident(incidentId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT *
+       FROM teams
+      WHERE incident_id = $1
+      ORDER BY created_at ASC, id ASC`,
+    [incidentId],
+  );
+  return rows.map(toTeam);
+}
+
 // Database row (snake_case) → API shape (camelCase, same names the request uses).
 function toTeam(row) {
   return {
