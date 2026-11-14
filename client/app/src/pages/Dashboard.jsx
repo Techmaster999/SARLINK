@@ -21,6 +21,12 @@ import {
 } from "./DashboardHeader";
 import { DraggableVolunteerTab } from "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab";
 import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
+import {
+  EtaDisplay,
+  formatEta,
+  useCurrentTime,
+  getEtaStatus,
+} from "./EtaDisplay";
 import "./Dashboard.css";
 import { onVolunteerReassigned } from "../api/realtime";
 
@@ -41,6 +47,10 @@ export {
   SHOWN_STATUSES,
   INCIDENT_TYPES,
   INCIDENT_LEVELS,
+  EtaDisplay,
+  formatEta,
+  useCurrentTime,
+  getEtaStatus,
 };
 
 export function DragModeIndicator({ isDragEnabled }) {
@@ -167,6 +177,51 @@ function isCommandPostTeam(team) {
   return team?.isCommandPost === true || type === "command post" || name === "command post";
 }
 
+function buildDefaultIncomingVolunteers(baseMs = Date.now()) {
+  return [
+    {
+      id: "vol-1",
+      name: "Handler Lisa Grant",
+      role: "K9 Handler",
+      organization: "El Dorado K9 SAR",
+      requestedTeam: { id: 101, name: "101" },
+      eta: new Date(baseMs + 30 * 1000).toISOString(),
+    },
+    {
+      id: "vol-2",
+      name: "SAR. Marcus Greene",
+      role: "Ground Searcher 1",
+      organization: "EDSAR Volunteer Unit",
+      requestedTeam: { id: 101, name: "101" },
+      eta: new Date(baseMs + 10 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-3",
+      name: "PM. Diane Okafor",
+      role: "Paramedic / Field Medic",
+      organization: "AMR Northern California",
+      requestedTeam: { id: 102, name: "102" },
+      eta: new Date(baseMs + 15 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-4",
+      name: "Spec. Joel Whitmore",
+      role: "Technical Rope Rescue",
+      organization: "CALSAR Volunteer Unit",
+      requestedTeam: { id: 102, name: "102" },
+      eta: new Date(baseMs + 25 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-5",
+      name: "Tech. Amy Chen",
+      role: "USAR — Drone Operator",
+      organization: "Cal OES Drone Team",
+      requestedTeam: null,
+      eta: new Date(baseMs - 5 * 60 * 1000).toISOString(),
+    },
+  ];
+}
+
 export default function Dashboard({
   incidentName = "Operation Granite Peak",
   incidentType = "lost_hiker",
@@ -174,6 +229,7 @@ export default function Dashboard({
   op = "1",
   initialTeams = [],
   volunteers = DEFAULT_INCIDENT_VOLUNTEERS,
+  incomingVolunteers,
   totalPersonnel = 26,
   totalTeams,
   onAddTeam,
@@ -185,10 +241,21 @@ export default function Dashboard({
   const [isOpen, setIsOpen] = useState(false);
   const [teams, setTeams] = useState(initialTeams);
   const [dashboardVolunteers, setDashboardVolunteers] = useState(volunteers);
+  const [defaultIncoming] = useState(() => buildDefaultIncomingVolunteers());
+  const now = useCurrentTime(60000);
 
   useEffect(() => {
     setDashboardVolunteers(volunteers);
   }, [volunteers]);
+
+  const resolvedIncomingVolunteers = Array.isArray(incomingVolunteers)
+    ? incomingVolunteers
+    : Array.isArray(dashboardVolunteers) &&
+        dashboardVolunteers.some((v) => v?.eta != null || v?.arrivalTime != null)
+      ? dashboardVolunteers.filter(
+          (v) => v?.eta != null || v?.arrivalTime != null
+        )
+      : defaultIncoming;
 
   useEffect(() => {
     return onVolunteerReassigned((membership) => {
@@ -296,6 +363,57 @@ export default function Dashboard({
             ))}
           </div>
         )}
+
+        <section
+          className="sar-incoming-volunteers"
+          aria-label="Incoming Volunteers"
+        >
+          <div className="sar-incoming-volunteers__header">
+            <span className="sar-incoming-volunteers__title">
+              Incoming Volunteers
+            </span>
+            <span className="sar-incoming-volunteers__count">
+              {resolvedIncomingVolunteers.length} inbound
+            </span>
+          </div>
+          {resolvedIncomingVolunteers.length === 0 ? (
+            <div className="sar-incoming-volunteers__empty">
+              All volunteers have been deployed.
+            </div>
+          ) : (
+            <div className="sar-incoming-volunteers__list">
+              {resolvedIncomingVolunteers.map((vol, index) => {
+                const requestedTeamName =
+                  typeof vol.requestedTeam === "string"
+                    ? vol.requestedTeam
+                    : vol.requestedTeam?.name;
+                return (
+                  <div
+                    key={vol.id || `${vol.name}-${index}`}
+                    className="sar-incoming-volunteers__row"
+                  >
+                    <div className="sar-incoming-volunteers__info">
+                      <span className="sar-incoming-volunteers__name">
+                        {vol.name}
+                      </span>
+                      {(requestedTeamName || vol.role || vol.organization) && (
+                        <span className="sar-incoming-volunteers__meta">
+                          {requestedTeamName
+                            ? `Requested Team: ${requestedTeamName}`
+                            : vol.role || vol.organization}
+                        </span>
+                      )}
+                    </div>
+                    <EtaDisplay
+                      arrivalTime={vol.eta ?? vol.arrivalTime}
+                      now={now}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </main>
 
       <CreateTeamModal
