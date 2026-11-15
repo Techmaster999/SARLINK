@@ -1,8 +1,11 @@
 /* Operating team card (Figma TeamCard): coloured header with the team number, leader and
- * member count, collapsible list of members underneath. Drag and drop is added separately. */
+ * member count, collapsible list of members underneath. With drag enabled, members can be
+ * dragged out and people dropped in (the Dashboard's DndContext handles the move). */
 import { useState } from "react";
+import { useDndContext, useDraggable } from "@dnd-kit/core";
+import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
 import { MedQualBadge, SHOWN_STATUSES } from "./DashboardHeader";
-import { ChevronIcon } from "./dashboardIcons";
+import { ChevronIcon, GripIcon } from "./dashboardIcons";
 
 const STATUS_COLOR = Object.fromEntries(SHOWN_STATUSES.map((s) => [s.key, s.color]));
 
@@ -32,8 +35,73 @@ export function MemberRow({ member }) {
   );
 }
 
-/** The member list under a team or command-post group header. */
-export function MemberList({ members = [], tint = "#FFFFFF", emptyText }) {
+/** A member that can be dragged to another team or command-post group. */
+function DraggableMemberRow({ member, containerId }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `member:${member.id}`,
+    data: { kind: "member", memberId: member.id, fromId: containerId, name: member.name },
+  });
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={`sar-draggable${isDragging ? " sar-draggable--dragging" : ""}`}
+      aria-label={`Drag ${member.name}`}
+    >
+      <span className="sar-draggable__grip" aria-hidden="true">
+        <GripIcon size={12} />
+      </span>
+      <MemberRow member={member} />
+    </div>
+  );
+}
+
+/** Drop target around a member list; highlights while a person is dragged over it. */
+function DroppableMemberList({ members, tint, accent, emptyText, containerId, label }) {
+  const { active, over } = useDndContext();
+  const dragged = active?.data.current;
+  const isOverHere =
+    over?.data.current?.team?.id === containerId && dragged?.fromId !== containerId;
+  return (
+    <DroppableTeamColumn
+      team={{ id: containerId, name: label, tint, accent }}
+      activeVolunteer={dragged}
+      currentVolunteerTeamId={dragged?.kind === "member" ? dragged.fromId : null}
+    >
+      {members.map((m) => (
+        <DraggableMemberRow key={m.id} member={m} containerId={containerId} />
+      ))}
+      {members.length === 0 && !isOverHere && (
+        <p className="sar-member-list__empty">{emptyText}</p>
+      )}
+    </DroppableTeamColumn>
+  );
+}
+
+/** The member list under a team or command-post group header. Pass `containerId` and
+ * `dragEnabled` to make it a drag source and drop target. */
+export function MemberList({
+  members = [],
+  tint = "#FFFFFF",
+  accent = "#0B2A5B",
+  emptyText,
+  containerId,
+  label,
+  dragEnabled = false,
+}) {
+  if (dragEnabled && containerId) {
+    return (
+      <DroppableMemberList
+        members={members}
+        tint={tint}
+        accent={accent}
+        emptyText={emptyText}
+        containerId={containerId}
+        label={label}
+      />
+    );
+  }
   return (
     <div className="sar-member-list" style={{ backgroundColor: tint }}>
       {members.map((m) => (
@@ -44,7 +112,7 @@ export function MemberList({ members = [], tint = "#FFFFFF", emptyText }) {
   );
 }
 
-export function OperatingTeamCard({ team }) {
+export function OperatingTeamCard({ team, dragEnabled = false }) {
   const [open, setOpen] = useState(true);
   const members = Array.isArray(team.members) ? team.members : [];
   const number = team.number || team.name;
@@ -78,7 +146,15 @@ export function OperatingTeamCard({ team }) {
         </div>
       </button>
       {open && (
-        <MemberList members={members} tint={team.tint} emptyText="No one assigned yet." />
+        <MemberList
+          members={members}
+          tint={team.tint}
+          accent={team.accent}
+          containerId={team.id}
+          label={`Team ${number}`}
+          dragEnabled={dragEnabled}
+          emptyText={dragEnabled ? "No one assigned yet. Drag a member here." : "No one assigned yet."}
+        />
       )}
     </section>
   );

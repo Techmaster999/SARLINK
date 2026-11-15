@@ -27,6 +27,19 @@ export function ChevronIcon({ open, size = 14, color }) {
   );
 }
 
+export function GripIcon({ size = 12, color }) {
+  return (
+    <Icon size={size} color={color}>
+      <circle cx="9" cy="5" r="1" />
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="9" cy="19" r="1" />
+      <circle cx="15" cy="5" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="15" cy="19" r="1" />
+    </Icon>
+  );
+}
+
 export function ShieldIcon({ size = 18, color = "#FFFFFF" }) {
   return (
     <Icon size={size} color={color}>

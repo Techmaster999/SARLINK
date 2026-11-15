@@ -1036,6 +1036,67 @@
   }
 }
 
+/* ── Drag and drop (Figma: DraggableMember, DraggableVolunteerRow) ─────────── */
+.sar-draggable {
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+  transition: opacity 0.15s;
+}
+
+.sar-draggable:active {
+  cursor: grabbing;
+}
+
+.sar-draggable:focus-visible {
+  outline: 2px solid #0b2a5b;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.sar-draggable--dragging {
+  opacity: 0.3;
+}
+
+.sar-draggable__grip {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: flex;
+  color: transparent;
+  pointer-events: none;
+  transition: color 0.12s;
+}
+
+.sar-draggable:hover .sar-draggable__grip {
+  color: #9ca3af;
+}
+
+.sar-draggable--dragging .sar-draggable__grip {
+  color: transparent;
+}
+
+/* Incoming rows are wrapped one per draggable, so the row separator moves to the wrapper. */
+.sar-draggable--row .sar-incoming__row {
+  border-bottom: none;
+}
+
+.sar-draggable--row:not(:last-child) {
+  border-bottom: 1px solid #d5d9df;
+}
+
+.sar-draggable--row .sar-draggable__grip {
+  left: 6px;
+}
+
+.sar-incoming__hint {
+  margin-top: 1px;
+  font-size: 11px;
+  color: #5b6470;
+}
+
 /* ── IST sub-team, standby list, compact tabs (DT-239, from main) ─────────── */
 .sar-ist-subteam {
   margin-bottom: 14px;

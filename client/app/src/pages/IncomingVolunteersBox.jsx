@@ -1,7 +1,9 @@
 /* Incoming Volunteers panel (Figma IncomingVolunteersPanel): collapsible table of who is
- * on the way — staging first, then soonest ETA. Drag to deploy is added separately. */
+ * on the way — staging first, then soonest ETA. With drag enabled, a row can be dragged
+ * onto a team or the command post to deploy that volunteer. */
 import { useState } from "react";
-import { CheckCircleIcon, ChevronIcon, ClockIcon, TruckIcon, UserIcon } from "./dashboardIcons";
+import { useDraggable } from "@dnd-kit/core";
+import { CheckCircleIcon, ChevronIcon, ClockIcon, GripIcon, TruckIcon, UserIcon } from "./dashboardIcons";
 
 const TEXT_SUB = "#5B6470";
 
@@ -25,7 +27,7 @@ export function sortIncoming(volunteers) {
   });
 }
 
-function VolunteerRow({ vol }) {
+function VolunteerRow({ vol, dragHint = false }) {
   const s = VOL_STATUS_STYLE[vol.status] ?? VOL_STATUS_STYLE["en-route"];
   const etaText =
     vol.status === "staging" ? VOL_STATUS_LABEL.staging : vol.eta || VOL_STATUS_LABEL[vol.status] || "—";
@@ -36,7 +38,12 @@ function VolunteerRow({ vol }) {
         <div className="sar-incoming__avatar">
           <UserIcon size={12} color={TEXT_SUB} />
         </div>
-        <span className="sar-incoming__name">{vol.name}</span>
+        <div className="sar-incoming__name-wrap">
+          <span className="sar-incoming__name">{vol.name}</span>
+          {dragHint && (
+            <div className="sar-incoming__hint">Drag onto a team or the command post</div>
+          )}
+        </div>
       </div>
       <span className="sar-incoming__cell" data-label="Organization">{vol.organization}</span>
       <span className="sar-incoming__cell" data-label="Role">{vol.role}</span>
@@ -54,7 +61,28 @@ function VolunteerRow({ vol }) {
   );
 }
 
-export function IncomingVolunteersBox({ volunteers = [] }) {
+function DraggableVolunteerRow({ vol }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `volunteer:${vol.id}`,
+    data: { kind: "volunteer", volunteerId: vol.id, name: vol.name },
+  });
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={`sar-draggable sar-draggable--row${isDragging ? " sar-draggable--dragging" : ""}`}
+      aria-label={`Drag ${vol.name} to deploy`}
+    >
+      <span className="sar-draggable__grip" aria-hidden="true">
+        <GripIcon size={13} />
+      </span>
+      <VolunteerRow vol={vol} dragHint />
+    </div>
+  );
+}
+
+export function IncomingVolunteersBox({ volunteers = [], dragEnabled = false }) {
   const [open, setOpen] = useState(true);
   const sorted = sortIncoming(volunteers);
 
@@ -85,9 +113,13 @@ export function IncomingVolunteersBox({ volunteers = [] }) {
                 <span key={h}>{h}</span>
               ))}
             </div>
-            {sorted.map((vol) => (
-              <VolunteerRow key={vol.id} vol={vol} />
-            ))}
+            {sorted.map((vol) =>
+              dragEnabled ? (
+                <DraggableVolunteerRow key={vol.id} vol={vol} />
+              ) : (
+                <VolunteerRow key={vol.id} vol={vol} />
+              ),
+            )}
           </div>
         ))}
     </section>

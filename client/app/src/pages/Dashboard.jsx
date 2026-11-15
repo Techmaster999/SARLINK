@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  pointerWithin,
+  rectIntersection,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   CreateTeamModal,
   closeCreateTeamModal as closeModalHelper,
   getNextTeamNumber,
@@ -30,7 +41,9 @@ import {
   SAMPLE_INCOMING_VOLUNTEERS,
   SAMPLE_TEAMS,
 } from "./dashboardSampleData";
+import { applyDrop, createBoard } from "./dashboardBoard";
 import "./Dashboard.css";
+import "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab.css";
 import { onVolunteerReassigned } from "../api/realtime";
 
 export {
@@ -170,6 +183,12 @@ export function IstSubTeam({ members = [] }) {
   );
 }
 
+// Pointer position decides the drop target; keyboard drags fall back to overlap.
+function collisionDetection(args) {
+  const hits = pointerWithin(args);
+  return hits.length > 0 ? hits : rectIntersection(args);
+}
+
 function isCommandPostTeam(team) {
   const type = String(team?.type ?? team?.teamType ?? "").toLowerCase();
   const name = String(team?.name ?? "").toLowerCase().replace(/[-_]/g, " ");
@@ -195,7 +214,36 @@ export default function Dashboard({
   isIstAccount = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [teams, setTeams] = useState(initialTeams);
+  // Everything drag and drop can change lives in one board (see dashboardBoard.js).
+  const [board, setBoard] = useState(() =>
+    createBoard({ teams: initialTeams, commandPost, incoming: incomingVolunteers }),
+  );
+  const { teams } = board;
+  // TODO: Only IST members should be able to drag and drop (the server already limits
+  // reassignment to IST via requireIst). Drag is always on for now because login doesn't
+  // record a user's role yet; once it does, gate this on the IST role,
+  // e.g. `isIstAccount && isDragEnabled`.
+  const canDrag = true;
+  const [dragging, setDragging] = useState(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  const handleDragStart = useCallback((event) => {
+    setDragging(event.active.data.current ?? null);
+  }, []);
+
+  // Status follows the destination: a team = Assigned, the command post = Standby.
+  const handleDragEnd = useCallback(({ active, over }) => {
+    setDragging(null);
+    const toId = over?.data.current?.team?.id;
+    if (toId == null) return;
+    setBoard((prev) => applyDrop(prev, active.data.current, toId));
+  }, []);
+
+  const handleDragCancel = useCallback(() => setDragging(null), []);
   const [dashboardVolunteers, setDashboardVolunteers] = useState(volunteers);
 
   useEffect(() => {
@@ -220,8 +268,10 @@ export default function Dashboard({
 
   const handleCreateTeam = useCallback((newTeam) => {
     // Team numbers are unique within the operational period.
-    setTeams((prev) =>
-      prev.some((t) => String(t.number) === String(newTeam.number)) ? prev : [...prev, newTeam],
+    setBoard((prev) =>
+      prev.teams.some((t) => String(t.number) === String(newTeam.number))
+        ? prev
+        : { ...prev, teams: [...prev.teams, newTeam] },
     );
     setIsOpen(false);
   }, []);
@@ -242,9 +292,9 @@ export default function Dashboard({
   const boardPersonnel =
     teams.reduce((sum, t) => sum + (Array.isArray(t.members) ? t.members.length : 0), 0) +
     1 +
-    (commandPost?.roster?.length ?? 0) +
-    (commandPost?.ist?.length ?? 0) +
-    (commandPost?.standby?.length ?? 0);
+    board.commandPost.roster.length +
+    board.commandPost.ist.length +
+    board.commandPost.standby.length;
   const displayedPersonnel =
     typeof totalPersonnel === "number" ? totalPersonnel : boardPersonnel;
 
@@ -264,23 +314,43 @@ export default function Dashboard({
 
       <main className="sar-dashboard-main">
         {isIstAccount && <DragModeIndicator isDragEnabled={isDragEnabled} />}
-        <div className="sar-board">
-          <CommandPostCard icName={incidentCommander} commandPost={commandPost} />
+        <DndContext
+          sensors={sensors}
+          collisionDetection={collisionDetection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <div className="sar-board">
+            <CommandPostCard
+              icName={incidentCommander}
+              commandPost={board.commandPost}
+              dragEnabled={canDrag}
+            />
 
-          {sortedTeams.length === 0 ? (
-            <div className="sar-dashboard-empty">
-              No teams formed yet for OP {op}. Use Add Team to form the first one.
-            </div>
-          ) : (
-            <div className="sar-teams-grid">
-              {sortedTeams.map((team) => (
-                <OperatingTeamCard key={team.id} team={team} />
-              ))}
-            </div>
-          )}
+            {sortedTeams.length === 0 ? (
+              <div className="sar-dashboard-empty">
+                No teams formed yet for OP {op}. Use Add Team to form the first one.
+              </div>
+            ) : (
+              <div className="sar-teams-grid">
+                {sortedTeams.map((team) => (
+                  <OperatingTeamCard key={team.id} team={team} dragEnabled={canDrag} />
+                ))}
+              </div>
+            )}
 
-          <IncomingVolunteersBox volunteers={incomingVolunteers} />
-        </div>
+            <IncomingVolunteersBox volunteers={board.incoming} dragEnabled={canDrag} />
+          </div>
+
+          <DragOverlay dropAnimation={null}>
+            {dragging ? (
+              <div className="sar-volunteer-tab sar-volunteer-tab--overlay" aria-hidden="true">
+                {dragging.name}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </main>
 
       <CreateTeamModal

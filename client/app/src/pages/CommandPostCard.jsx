@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SHOWN_STATUSES } from "./DashboardHeader";
 import { MemberList } from "./OperatingTeamCard";
+import { CP_IDS } from "./dashboardBoard";
 import { ChevronIcon, ShieldIcon, UserIcon, UsersIcon } from "./dashboardIcons";
 
 const TEXT_SUB = "#5B6470";
@@ -10,7 +11,7 @@ const STANDBY_COLOR = SHOWN_STATUSES.find((s) => s.key === "standby")?.color ?? 
 // IST sub-team colour (kept clear of the team palette)
 const IST = { label: "IST", accent: "#A3246B", tint: "#FDF1F7" };
 
-function IstSubTeam({ members }) {
+function IstSubTeam({ members, dragEnabled = false }) {
   return (
     <div className="sar-ist" style={{ borderColor: `${IST.accent}55` }}>
       <div className="sar-ist__header" style={{ backgroundColor: IST.accent }}>
@@ -23,7 +24,13 @@ function IstSubTeam({ members }) {
       <MemberList
         members={members}
         tint={IST.tint}
-        emptyText={`No one on ${IST.label} yet.`}
+        accent={IST.accent}
+        containerId={CP_IDS.ist}
+        label={IST.label}
+        dragEnabled={dragEnabled}
+        emptyText={
+          dragEnabled ? `Drag members here to put them on ${IST.label}.` : `No one on ${IST.label} yet.`
+        }
       />
     </div>
   );
@@ -40,7 +47,7 @@ function GroupToggle({ icon, label, detail, open, onToggle }) {
   );
 }
 
-export function CommandPostCard({ icName = "Unassigned", commandPost }) {
+export function CommandPostCard({ icName = "Unassigned", commandPost, dragEnabled = false }) {
   const roster = commandPost?.roster ?? [];
   const ist = commandPost?.ist ?? [];
   const standby = commandPost?.standby ?? [];
@@ -99,9 +106,19 @@ export function CommandPostCard({ icName = "Unassigned", commandPost }) {
                   <span className="sar-cp__ic-tag">IC</span>
                 </div>
               </div>
-              <MemberList members={roster} emptyText="No one else on the CP roster." />
+              <MemberList
+                members={roster}
+                containerId={CP_IDS.roster}
+                label="CP roster"
+                dragEnabled={dragEnabled}
+                emptyText={
+                  dragEnabled
+                    ? "Drag members here to add them to the CP roster."
+                    : "No one else on the CP roster."
+                }
+              />
               <div className="sar-cp__ist-wrap">
-                <IstSubTeam members={ist} />
+                <IstSubTeam members={ist} dragEnabled={dragEnabled} />
               </div>
             </>
           )}
@@ -115,7 +132,17 @@ export function CommandPostCard({ icName = "Unassigned", commandPost }) {
             open={standbyOpen}
             onToggle={() => setStandbyOpen((v) => !v)}
           />
-          {standbyOpen && <MemberList members={standby} emptyText="No personnel on standby." />}
+          {standbyOpen && (
+            <MemberList
+              members={standby}
+              containerId={CP_IDS.standby}
+              label="CP standby"
+              dragEnabled={dragEnabled}
+              emptyText={
+                dragEnabled ? "No personnel on standby. Drag a member here." : "No personnel on standby."
+              }
+            />
+          )}
         </div>
       </div>
     </section>
