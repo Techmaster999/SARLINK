@@ -6,8 +6,10 @@ export default function HomePage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    fetch('/api/auth/session')
-      .then((response) => response.json())
+    fetch('/api/auth/session', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+    })
       .then(async (response) => {
         const session = await response.json();
         if (!response.ok && session.error === 'session_expired') {

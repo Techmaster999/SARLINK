@@ -11,6 +11,16 @@ export async function insertTeam(team, db = pool) {
   return toTeam(rows[0]);
 }
 
+export async function findTeamById(teamId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT id, name
+       FROM teams
+      WHERE id = $1`,
+    [teamId],
+  );
+  return rows[0] ?? null;
+}
+
 // Database row (snake_case) → API shape (camelCase, same names the request uses).
 function toTeam(row) {
   return {

@@ -2,7 +2,7 @@ BEGIN;
 
 -- Volunteers responding to an incident.
 -- status tracks where they are: on the way ('Incoming'), checked in at the
--- incident ('Arrived'), or placed on a team ('Assigned').
+-- incident ('Arrived'), or placed on a team ('Assigned'/'Standby').
 -- requested_team_id is the team the volunteer asked to join. It can be empty,
 -- and deleting that team just clears the request.
 CREATE TABLE IF NOT EXISTS volunteers (

@@ -36,6 +36,17 @@ export async function findIncomingVolunteers(incidentId, db = pool) {
   return rows.filter((row) => row.volunteer_id != null).map(toIncomingVolunteer);
 }
 
+export async function saveVolunteerStatus(volunteerId, status, db = pool) {
+  const { rows } = await db.query(
+    `UPDATE volunteers
+        SET status = $2
+      WHERE id::text = $1
+      RETURNING id, status`,
+    [volunteerId, status],
+  );
+  return rows[0] ? { volunteerId: String(rows[0].id), status: rows[0].status } : null;
+}
+
 // Database row (snake_case) → API shape (camelCase).
 function toIncomingVolunteer(row) {
   return {
