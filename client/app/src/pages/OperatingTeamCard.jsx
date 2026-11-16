@@ -2,10 +2,11 @@
  * member count, collapsible list of members underneath. With drag enabled, members can be
  * dragged out and people dropped in (the Dashboard's DndContext handles the move). */
 import { useState } from "react";
-import { useDndContext, useDraggable } from "@dnd-kit/core";
+import { useDndContext } from "@dnd-kit/core";
 import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
+import { SortableVolunteerList } from "../../../src/components/SortableVolunteerTab/SortableVolunteerList";
 import { MedQualBadge, SHOWN_STATUSES } from "./DashboardHeader";
-import { ChevronIcon, GripIcon } from "./dashboardIcons";
+import { ChevronIcon } from "./dashboardIcons";
 
 const STATUS_COLOR = Object.fromEntries(SHOWN_STATUSES.map((s) => [s.key, s.color]));
 
@@ -35,28 +36,6 @@ export function MemberRow({ member }) {
   );
 }
 
-/** A member that can be dragged to another team or command-post group. */
-function DraggableMemberRow({ member, containerId }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `member:${member.id}`,
-    data: { kind: "member", memberId: member.id, fromId: containerId, name: member.name },
-  });
-  return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      className={`sar-draggable${isDragging ? " sar-draggable--dragging" : ""}`}
-      aria-label={`Drag ${member.name}`}
-    >
-      <span className="sar-draggable__grip" aria-hidden="true">
-        <GripIcon size={12} />
-      </span>
-      <MemberRow member={member} />
-    </div>
-  );
-}
-
 /** Drop target around a member list; highlights while a person is dragged over it. */
 function DroppableMemberList({ members, tint, accent, emptyText, containerId, label }) {
   const { active, over } = useDndContext();
@@ -69,9 +48,12 @@ function DroppableMemberList({ members, tint, accent, emptyText, containerId, la
       activeVolunteer={dragged}
       currentVolunteerTeamId={dragged?.kind === "member" ? dragged.fromId : null}
     >
-      {members.map((m) => (
-        <DraggableMemberRow key={m.id} member={m} containerId={containerId} />
-      ))}
+      <SortableVolunteerList
+        teamId={containerId}
+        volunteers={members}
+        isIstAccount
+        renderVolunteer={(member) => <MemberRow member={member} />}
+      />
       {members.length === 0 && !isOverHere && (
         <p className="sar-member-list__empty">{emptyText}</p>
       )}

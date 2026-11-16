@@ -13,6 +13,7 @@ export function SortableVolunteerList({
   teamId,
   volunteers = [],
   isIstAccount = false,
+  renderVolunteer,
 }) {
   const [orderedVolunteers, setOrderedVolunteers] = useState(volunteers);
   const [saveError, setSaveError] = useState('');
@@ -41,6 +42,12 @@ export function SortableVolunteerList({
     setOrderedVolunteers(nextOrder);
     const orderedVolunteerIds = nextOrder.map((volunteer) => String(volunteer.id));
 
+    // The standalone dashboard uses synthetic team IDs; keep those reorders local.
+    if (!/^\d+$/.test(String(teamId))) {
+      setSaveError('');
+      return;
+    }
+
     try {
       await saveVolunteerOrder(teamId, orderedVolunteerIds);
       setSaveError('');
@@ -63,7 +70,9 @@ export function SortableVolunteerList({
             <SortableVolunteerTab
               key={volunteer.id}
               volunteer={volunteer}
+              teamId={teamId}
               isIstAccount={isIstAccount}
+              renderVolunteer={renderVolunteer}
             />
           ))}
         </div>
