@@ -388,6 +388,12 @@ export default function Dashboard({
       const item = active.data?.current;
       const volunteerId = item?.memberId ?? item?.volunteerId;
       if (volunteerId == null) return;
+      if (
+        item?.fromId != null &&
+        String(item.fromId) === String(targetTeamId)
+      ) {
+        return;
+      }
       setBoard((current) => applyDrop(current, item, targetTeamId));
       // The standalone dashboard uses placeholder IDs until it is connected to
       // incident data. Keep those local moves visible instead of rolling them

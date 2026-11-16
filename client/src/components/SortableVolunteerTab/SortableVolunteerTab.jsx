@@ -23,6 +23,7 @@ export function SortableVolunteerTab({
       kind: 'member',
       memberId: volunteer.id,
       fromId: teamId,
+      team: { id: teamId },
       name: volunteer.name,
     },
   });
@@ -32,13 +33,18 @@ export function SortableVolunteerTab({
       : undefined,
     transition,
   };
+  const isRenderedVolunteer = typeof renderVolunteer === 'function';
 
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={`sar-volunteer-tab${isDragging ? ' sar-volunteer-tab--dragging' : ''}`}
+      className={
+        isRenderedVolunteer
+          ? `sar-draggable${isDragging ? ' sar-draggable--dragging' : ''}`
+          : `sar-volunteer-tab${isDragging ? ' sar-volunteer-tab--dragging' : ''}`
+      }
       style={style}
       aria-label={`Volunteer tab: ${volunteer.name}`}
       aria-disabled={!isIstAccount}

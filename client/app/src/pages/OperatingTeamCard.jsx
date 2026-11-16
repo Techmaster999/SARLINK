@@ -2,8 +2,7 @@
  * member count, collapsible list of members underneath. With drag enabled, members can be
  * dragged out and people dropped in (the Dashboard's DndContext handles the move). */
 import { useState } from "react";
-import { useDndContext } from "@dnd-kit/core";
-import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
+import { useDndContext, useDroppable } from "@dnd-kit/core";
 import { SortableVolunteerList } from "../../../src/components/SortableVolunteerTab/SortableVolunteerList";
 import { MedQualBadge, SHOWN_STATUSES } from "./DashboardHeader";
 import { ChevronIcon } from "./dashboardIcons";
@@ -37,27 +36,31 @@ export function MemberRow({ member }) {
 }
 
 /** Drop target around a member list; highlights while a person is dragged over it. */
-function DroppableMemberList({ members, tint, accent, emptyText, containerId, label }) {
+function DroppableMemberList({ members, tint, emptyText, containerId }) {
   const { active, over } = useDndContext();
   const dragged = active?.data.current;
   const isOverHere =
-    over?.data.current?.team?.id === containerId && dragged?.fromId !== containerId;
+    Boolean(active) &&
+    over?.data.current?.team?.id != null &&
+    String(over.data.current.team.id) === String(containerId) &&
+    String(dragged?.fromId) !== String(containerId);
   return (
-    <DroppableTeamColumn
-      team={{ id: containerId, name: label, tint, accent }}
-      activeVolunteer={dragged}
-      currentVolunteerTeamId={dragged?.kind === "member" ? dragged.fromId : null}
-    >
+    <div className="sar-member-list" style={{ backgroundColor: tint }}>
       <SortableVolunteerList
         teamId={containerId}
         volunteers={members}
         isIstAccount
         renderVolunteer={(member) => <MemberRow member={member} />}
       />
+      {isOverHere && (
+        <div className="sar-team-drop-placeholder" aria-live="polite">
+          Drop to assign here
+        </div>
+      )}
       {members.length === 0 && !isOverHere && (
         <p className="sar-member-list__empty">{emptyText}</p>
       )}
-    </DroppableTeamColumn>
+    </div>
   );
 }
 
@@ -98,10 +101,24 @@ export function OperatingTeamCard({ team, dragEnabled = false }) {
   const [open, setOpen] = useState(true);
   const members = Array.isArray(team.members) ? team.members : [];
   const number = team.number || team.name;
+  const { active, over } = useDndContext();
+  const { setNodeRef } = useDroppable({
+    id: `team-${team.id}`,
+    disabled: !dragEnabled,
+    data: { team },
+  });
+  const dragged = active?.data.current;
+  const isDropTarget =
+    dragEnabled &&
+    Boolean(active) &&
+    over?.data.current?.team?.id != null &&
+    String(over.data.current.team.id) === String(team.id) &&
+    String(dragged?.fromId) !== String(team.id);
 
   return (
     <section
-      className="sar-team-card"
+      ref={setNodeRef}
+      className={`sar-team-card${isDropTarget ? " sar-team-card--drop-target" : ""}`}
       style={{ borderColor: `${team.accent}30` }}
       aria-label={`Team ${number}`}
     >
@@ -131,9 +148,7 @@ export function OperatingTeamCard({ team, dragEnabled = false }) {
         <MemberList
           members={members}
           tint={team.tint}
-          accent={team.accent}
           containerId={team.id}
-          label={`Team ${number}`}
           dragEnabled={dragEnabled}
           emptyText={dragEnabled ? "No one assigned yet. Drag a member here." : "No one assigned yet."}
         />
