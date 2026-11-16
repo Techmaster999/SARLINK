@@ -88,6 +88,10 @@ function memberValue(member, key) {
   return member?.[key] ?? member?.volunteer?.[key] ?? "";
 }
 
+function hasDatabaseVolunteerId(volunteerId) {
+  return /^\d+$/.test(String(volunteerId ?? "").trim());
+}
+
 function isIstMember(member) {
   if (typeof member === "string") return false;
   const assignment = String(
@@ -384,7 +388,17 @@ export default function Dashboard({
       const item = active.data?.current;
       const volunteerId = item?.memberId ?? item?.volunteerId;
       if (volunteerId == null) return;
+      if (
+        item?.fromId != null &&
+        String(item.fromId) === String(targetTeamId)
+      ) {
+        return;
+      }
       setBoard((current) => applyDrop(current, item, targetTeamId));
+      // The standalone dashboard uses placeholder IDs until it is connected to
+      // incident data. Keep those local moves visible instead of rolling them
+      // back after a guaranteed API validation failure.
+      if (!hasDatabaseVolunteerId(volunteerId)) return;
       try {
         await reassignVolunteerToTeam(volunteerId, targetTeamId);
       } catch (error) {

@@ -2,7 +2,12 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import '../DraggableVolunteerTab/DraggableVolunteerTab.css';
 
-export function SortableVolunteerTab({ volunteer, isIstAccount = false }) {
+export function SortableVolunteerTab({
+  volunteer,
+  teamId,
+  isIstAccount = false,
+  renderVolunteer,
+}) {
   const {
     attributes,
     listeners,
@@ -13,7 +18,14 @@ export function SortableVolunteerTab({ volunteer, isIstAccount = false }) {
   } = useSortable({
     id: String(volunteer.id),
     disabled: !isIstAccount,
-    data: { volunteer },
+    data: {
+      volunteer,
+      kind: 'member',
+      memberId: volunteer.id,
+      fromId: teamId,
+      team: { id: teamId },
+      name: volunteer.name,
+    },
   });
   const style = {
     transform: transform
@@ -21,13 +33,18 @@ export function SortableVolunteerTab({ volunteer, isIstAccount = false }) {
       : undefined,
     transition,
   };
+  const isRenderedVolunteer = typeof renderVolunteer === 'function';
 
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={`sar-volunteer-tab${isDragging ? ' sar-volunteer-tab--dragging' : ''}`}
+      className={
+        isRenderedVolunteer
+          ? `sar-draggable${isDragging ? ' sar-draggable--dragging' : ''}`
+          : `sar-volunteer-tab${isDragging ? ' sar-volunteer-tab--dragging' : ''}`
+      }
       style={style}
       aria-label={`Volunteer tab: ${volunteer.name}`}
       aria-disabled={!isIstAccount}
@@ -35,7 +52,9 @@ export function SortableVolunteerTab({ volunteer, isIstAccount = false }) {
       data-dragging={isDragging}
       tabIndex={isIstAccount ? 0 : -1}
     >
-      {volunteer.name}
+      {typeof renderVolunteer === 'function'
+        ? renderVolunteer(volunteer)
+        : volunteer.name}
     </div>
   );
 }
