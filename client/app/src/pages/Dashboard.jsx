@@ -287,10 +287,12 @@ export default function Dashboard({
   }, []);
   const handleDragCancel = useCallback(() => setDragging(null), []);
 
-  const [dashboardVolunteers, setDashboardVolunteers] = useState(volunteers);
+  const [dashboardVolunteers, setDashboardVolunteers] = useState(() =>
+    Array.isArray(volunteers) ? volunteers : [],
+  );
 
   useEffect(() => {
-    setDashboardVolunteers(volunteers);
+    setDashboardVolunteers(Array.isArray(volunteers) ? volunteers : []);
   }, [volunteers]);
 
   useEffect(() => {

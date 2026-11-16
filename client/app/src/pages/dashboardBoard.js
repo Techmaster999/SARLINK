@@ -25,16 +25,18 @@ export const statusFor = (containerId, board) =>
 const withStatus = (member, status) => (member.status === status ? member : { ...member, status });
 
 export function createBoard({ teams = [], commandPost, incoming = [] } = {}) {
+  const asArray = (value) => (Array.isArray(value) ? value : []);
+
   return {
-    teams,
+    teams: asArray(teams).filter((team) => team && typeof team === "object"),
     commandPost: {
       id: commandPost?.id,
       teamId: commandPost?.teamId,
-      roster: commandPost?.roster ?? [],
-      ist: commandPost?.ist ?? [],
-      standby: commandPost?.standby ?? [],
+      roster: asArray(commandPost?.roster),
+      ist: asArray(commandPost?.ist),
+      standby: asArray(commandPost?.standby),
     },
-    incoming,
+    incoming: asArray(incoming),
   };
 }
 
