@@ -136,14 +136,21 @@ function toCreateTeamError(err) {
  *   plus `status` and `fieldErrors` ({ teamId: "That team doesn't exist." }) when available.
  */
 export async function reassignVolunteerToTeam(volunteerId, newTeamId) {
+  const teamId = normalizeTeamId(newTeamId);
   try {
     const { data } = await api.put(
-      `/teams/${encodeURIComponent(newTeamId)}/volunteers/${encodeURIComponent(volunteerId)}`,
+      `/teams/${encodeURIComponent(teamId)}/volunteers/${encodeURIComponent(volunteerId)}`,
     );
     return data;
   } catch (err) {
     throw toReassignError(err);
   }
+}
+
+function normalizeTeamId(teamId) {
+  const value = String(teamId ?? "").trim();
+  const prefixedId = value.match(/^team-(\d+)$/i);
+  return prefixedId ? prefixedId[1] : teamId;
 }
 
 export async function saveVolunteerOrder(teamId, orderedVolunteerIds) {
