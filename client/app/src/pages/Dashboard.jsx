@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { DndContext, useDroppable } from "@dnd-kit/core";
 import {
   DndContext,
   DragOverlay,
@@ -245,6 +246,7 @@ function buildDefaultIncomingVolunteers(baseMs = Date.now()) {
 }
 
 export default function Dashboard({
+  incidentId = 1,
   incidentName = "Operation Granite Peak",
   incidentType = "lost_hiker",
   incidentLevel = "2",
@@ -257,6 +259,7 @@ export default function Dashboard({
   totalPersonnel,
   totalTeams,
   onAddTeam,
+  onCreateTeam,
   onSearchQuals,
   onSignOut,
   isDragEnabled = false,
@@ -322,7 +325,26 @@ export default function Dashboard({
     });
   }, []);
 
+  // Listen for new teams created by other open dashboards
+  useEffect(() => {
+    return onTeamCreated((incomingTeam) => {
+      if (!incomingTeam) return;
+      if (
+        incomingTeam.incidentId != null &&
+        Number(incomingTeam.incidentId) !== Number(incidentId)
+      ) {
+        return;
+      }
+      setTeams((prev) => {
+        const next = mergeUniqueTeams(prev, [incomingTeam]);
+        writeStoredTeams(incidentId, next);
+        return next;
+      });
+    });
+  }, [incidentId]);
+
   const closeCreateTeamModal = useCallback(() => {
+    setCreateTeamError("");
     closeModalHelper(setIsOpen);
   }, []);
 
@@ -343,8 +365,73 @@ export default function Dashboard({
     if (typeof onAddTeam === "function") {
       onAddTeam();
     }
+    setCreateTeamError("");
     setIsOpen(true);
   }, [onAddTeam]);
+
+  const handleDragStart = useCallback(
+    (event) => {
+      const vol =
+        event?.active?.data?.current?.volunteer ??
+        dashboardVolunteers.find(
+          (v) => String(v.id) === String(event?.active?.id)
+        ) ??
+        null;
+      setActiveVolunteer(vol);
+    },
+    [dashboardVolunteers]
+  );
+
+  const handleDragEnd = useCallback(
+    async (event) => {
+      setActiveVolunteer(null);
+      const { active, over } = event || {};
+      if (!active || !over) return;
+
+      const overId = String(over.id || "");
+      const targetTeamId = overId.startsWith("team-")
+        ? overId.slice("team-".length)
+        : over.data?.current?.team?.id;
+      if (!targetTeamId) return;
+
+      const draggedVolunteer =
+        active.data?.current?.volunteer ||
+        dashboardVolunteers.find(
+          (v) => String(v.id) === String(active.id)
+        ) || {
+          id: active.id,
+          name: String(active.id),
+        };
+
+      setTeams((prev) =>
+        prev.map((team) => {
+          const currentMembers = Array.isArray(team.members)
+            ? team.members
+            : [];
+          const withoutVolunteer = currentMembers.filter(
+            (m) => String(memberValue(m, "id")) !== String(draggedVolunteer.id)
+          );
+          if (String(team.id) === String(targetTeamId)) {
+            return {
+              ...team,
+              members: [...withoutVolunteer, draggedVolunteer],
+            };
+          }
+          return {
+            ...team,
+            members: withoutVolunteer,
+          };
+        })
+      );
+
+      try {
+        await reassignVolunteerToTeam(draggedVolunteer.id, targetTeamId);
+      } catch {
+        // Keep optimistic UI assignment when backend session is unavailable
+      }
+    },
+    [dashboardVolunteers]
+  );
 
   const displayedTeamCount =
     typeof totalTeams === "number" ? totalTeams : teams.length;
@@ -420,6 +507,8 @@ export default function Dashboard({
         existingTeams={teams}
         volunteers={dashboardVolunteers}
         op={op}
+        incidentId={incidentId}
+        error={createTeamError}
       />
     </div>
   );

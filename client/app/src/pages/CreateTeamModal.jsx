@@ -226,6 +226,8 @@ export function CreateTeamModal({
   existingTeams = [],
   volunteers = DEFAULT_INCIDENT_VOLUNTEERS,
   op = "1",
+  incidentId = 1,
+  error: externalError = "",
 }) {
   const initialSlotNumber = calculateLocalNextTeamNumber(existingTeams, op);
   const [teamName, setTeamName] = useState(initialSlotNumber);
@@ -236,22 +238,32 @@ export function CreateTeamModal({
   );
   const [error, setError] = useState("");
   const hasUserEditedRef = useRef(false);
+  const wasOpenRef = useRef(false);
   const nameInputRef = useRef(null);
 
   // Reset and pre-fill with next team number whenever modal opens
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      return;
+    }
+
+    const justOpened = !wasOpenRef.current;
+    wasOpenRef.current = true;
 
     let cancelled = false;
-    hasUserEditedRef.current = false;
-    const fallbackNum = calculateLocalNextTeamNumber(existingTeams, op);
-    setTeamName(fallbackNum);
-    setSlotNumber(fallbackNum);
-    setLeader("");
-    setColorIdx(
-      (Array.isArray(existingTeams) ? existingTeams.length : 0) % TEAM_PALETTE.length
-    );
-    setError("");
+    if (justOpened) {
+      hasUserEditedRef.current = false;
+      const fallbackNum = calculateLocalNextTeamNumber(existingTeams, op);
+      setTeamName(fallbackNum);
+      setSlotNumber(fallbackNum);
+      setLeader("");
+      setColorIdx(
+        (Array.isArray(existingTeams) ? existingTeams.length : 0) %
+          TEAM_PALETTE.length
+      );
+      setError("");
+    }
 
     getNextTeamNumber(existingTeams, op).then((nextNum) => {
       if (!cancelled && !hasUserEditedRef.current && nextNum) {
@@ -260,14 +272,16 @@ export function CreateTeamModal({
       }
     });
 
-    const timer = setTimeout(() => {
-      nameInputRef.current?.focus?.({ preventScroll: true });
-      nameInputRef.current?.select?.();
-    }, 0);
+    const timer = justOpened
+      ? setTimeout(() => {
+          nameInputRef.current?.focus?.({ preventScroll: true });
+          nameInputRef.current?.select?.();
+        }, 0)
+      : null;
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
     };
   }, [isOpen, existingTeams, op]);
 
@@ -287,6 +301,7 @@ export function CreateTeamModal({
 
   const palette = TEAM_PALETTE[colorIdx] || TEAM_PALETTE[0];
   const isNameEmpty = teamName.trim() === "";
+  const displayedError = error || externalError;
 
   const handleTeamNameChange = (e) => {
   const val = e.target.value.slice(0, MAX_TEAM_NAME_LENGTH);

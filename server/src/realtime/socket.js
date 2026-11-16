@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 
 // Event names shared with the client (client/app/src/api/realtime.js).
 export const EVENTS = Object.freeze({
+  TEAM_CREATED: 'team:created',
   VOLUNTEER_REASSIGNED: 'volunteer:reassigned',
 });
 
