@@ -8,31 +8,66 @@ import { ChevronIcon, ShieldIcon, UserIcon, UsersIcon } from "./dashboardIcons";
 
 const TEXT_SUB = "#5B6470";
 const STANDBY_COLOR = SHOWN_STATUSES.find((s) => s.key === "standby")?.color ?? TEXT_SUB;
-// IST sub-team colour (kept clear of the team palette)
-const IST = { label: "IST", accent: "#A3246B", tint: "#FDF1F7" };
 
-function IstSubTeam({ members, dragEnabled = false }) {
+function memberValue(member, key) {
+  if (typeof member === "string") return key === "name" ? member : "";
+  return member?.[key] ?? member?.volunteer?.[key] ?? "";
+}
+
+export function CompactVolunteerTab({ volunteer }) {
+  const name = memberValue(volunteer, "name") || "Unnamed volunteer";
+  const role =
+    memberValue(volunteer, "istRole") ||
+    memberValue(volunteer, "role") ||
+    memberValue(volunteer, "teamRole");
+
   return (
-    <div className="sar-ist" style={{ borderColor: `${IST.accent}55` }}>
-      <div className="sar-ist__header" style={{ backgroundColor: IST.accent }}>
-        <span className="sar-ist__label">{IST.label}</span>
-        <span className="sar-ist__sub">Sub-team</span>
-        <span className="sar-ist__count">
-          {members.length} {members.length === 1 ? "member" : "members"}
-        </span>
-      </div>
-      <MemberList
-        members={members}
-        tint={IST.tint}
-        accent={IST.accent}
-        containerId={CP_IDS.ist}
-        label={IST.label}
-        dragEnabled={dragEnabled}
-        emptyText={
-          dragEnabled ? `Drag members here to put them on ${IST.label}.` : `No one on ${IST.label} yet.`
-        }
-      />
+    <div className="sar-compact-volunteer-tab">
+      <span className="sar-compact-volunteer-tab__avatar" aria-hidden="true">
+        {name.charAt(0).toUpperCase()}
+      </span>
+      <span className="sar-compact-volunteer-tab__copy">
+        <strong>{name}</strong>
+        {role && <small>{role}</small>}
+      </span>
     </div>
+  );
+}
+
+export function IstSubTeam({ members = [] }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  return (
+    <section className="sar-ist-subteam" aria-label="IST sub-team">
+      <button
+        type="button"
+        className="sar-ist-subteam__header"
+        aria-expanded={!isCollapsed}
+        onClick={() => setIsCollapsed((collapsed) => !collapsed)}
+      >
+        <span className="sar-ist-subteam__title">
+          <span className="sar-ist-subteam__mark" aria-hidden="true">+</span>
+          IST · <span className="sar-ist-subteam__count">{members.length}</span>
+        </span>
+        <span className="sar-ist-subteam__toggle">
+          {isCollapsed ? "Show" : "Hide"}
+        </span>
+      </button>
+      {!isCollapsed && (
+        <div className="sar-ist-subteam__body">
+          {members.length > 0 ? (
+            members.map((member, index) => (
+              <CompactVolunteerTab
+                key={memberValue(member, "id") || `${memberValue(member, "name")}-${index}`}
+                volunteer={member}
+              />
+            ))
+          ) : (
+            <p className="sar-ist-subteam__empty">No IST members assigned</p>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -51,6 +86,7 @@ export function CommandPostCard({ icName = "Unassigned", commandPost, dragEnable
   const roster = commandPost?.roster ?? [];
   const ist = commandPost?.ist ?? [];
   const standby = commandPost?.standby ?? [];
+  const standbyContainerId = commandPost?.teamId ?? commandPost?.id ?? CP_IDS.standby;
   const [rosterOpen, setRosterOpen] = useState(true);
   const [standbyOpen, setStandbyOpen] = useState(true);
   const onPost = 1 + roster.length + ist.length; // the IC is always on post
@@ -118,7 +154,7 @@ export function CommandPostCard({ icName = "Unassigned", commandPost, dragEnable
                 }
               />
               <div className="sar-cp__ist-wrap">
-                <IstSubTeam members={ist} dragEnabled={dragEnabled} />
+                <IstSubTeam members={ist} />
               </div>
             </>
           )}
@@ -135,7 +171,7 @@ export function CommandPostCard({ icName = "Unassigned", commandPost, dragEnable
           {standbyOpen && (
             <MemberList
               members={standby}
-              containerId={CP_IDS.standby}
+              containerId={standbyContainerId}
               label="CP standby"
               dragEnabled={dragEnabled}
               emptyText={

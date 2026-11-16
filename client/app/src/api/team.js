@@ -131,7 +131,7 @@ function toCreateTeamError(err) {
  * @param {string} volunteerId
  * @param {number|string} newTeamId
  * @returns {Promise<{ volunteerId: string, teamId: number, previousTeamId: number|null,
- *   incidentId: number, assignedAt: string }>}
+ *   incidentId: number, assignedAt: string, status: 'Assigned'|'Standby' }>}
  * @throws {Error} With a readable `message` starting "Couldn't reassign the volunteer",
  *   plus `status` and `fieldErrors` ({ teamId: "That team doesn't exist." }) when available.
  */

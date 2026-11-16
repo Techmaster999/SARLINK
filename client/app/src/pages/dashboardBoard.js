@@ -10,37 +10,48 @@ export const CP_IDS = Object.freeze({
   standby: "cp:standby",
 });
 
-const cpGroupOf = (containerId) =>
-  Object.keys(CP_IDS).find((group) => CP_IDS[group] === containerId) ?? null;
+const cpGroupOf = (containerId, board) => {
+  const fixedGroup = Object.keys(CP_IDS).find((group) => CP_IDS[group] === containerId);
+  if (fixedGroup) return fixedGroup;
+  const commandPostId = board?.commandPost?.teamId ?? board?.commandPost?.id;
+  return commandPostId != null && String(commandPostId) === String(containerId)
+    ? "standby"
+    : null;
+};
 
-export const statusFor = (containerId) => (cpGroupOf(containerId) ? "standby" : "assigned");
+export const statusFor = (containerId, board) =>
+  cpGroupOf(containerId, board) ? "standby" : "assigned";
 
 const withStatus = (member, status) => (member.status === status ? member : { ...member, status });
 
 export function createBoard({ teams = [], commandPost, incoming = [] } = {}) {
+  const asArray = (value) => (Array.isArray(value) ? value : []);
+
   return {
-    teams,
+    teams: asArray(teams).filter((team) => team && typeof team === "object"),
     commandPost: {
-      roster: commandPost?.roster ?? [],
-      ist: commandPost?.ist ?? [],
-      standby: commandPost?.standby ?? [],
+      id: commandPost?.id,
+      teamId: commandPost?.teamId,
+      roster: asArray(commandPost?.roster),
+      ist: asArray(commandPost?.ist),
+      standby: asArray(commandPost?.standby),
     },
-    incoming,
+    incoming: asArray(incoming),
   };
 }
 
 function hasContainer(board, containerId) {
-  return cpGroupOf(containerId) !== null || board.teams.some((t) => t.id === containerId);
+  return cpGroupOf(containerId, board) !== null || board.teams.some((t) => t.id === containerId);
 }
 
 function membersOf(board, containerId) {
-  const group = cpGroupOf(containerId);
+  const group = cpGroupOf(containerId, board);
   if (group) return board.commandPost[group];
   return board.teams.find((t) => t.id === containerId)?.members ?? [];
 }
 
 function mapMembers(board, containerId, fn) {
-  const group = cpGroupOf(containerId);
+  const group = cpGroupOf(containerId, board);
   if (group) {
     return { ...board, commandPost: { ...board.commandPost, [group]: fn(board.commandPost[group]) } };
   }
@@ -58,7 +69,7 @@ export function moveMember(board, memberId, fromId, toId) {
   const member = membersOf(board, fromId).find((m) => m.id === memberId);
   if (!member) return board;
   const removed = mapMembers(board, fromId, (ms) => ms.filter((m) => m.id !== memberId));
-  return mapMembers(removed, toId, (ms) => [...ms, withStatus(member, statusFor(toId))]);
+  return mapMembers(removed, toId, (ms) => [...ms, withStatus(member, statusFor(toId, removed))]);
 }
 
 /** Takes an incoming volunteer off the inbound list and puts them in a container. */
@@ -69,7 +80,7 @@ export function deployVolunteer(board, volunteerId, toId) {
     id: `deployed-${vol.id}`,
     name: vol.name,
     role: vol.role,
-    status: statusFor(toId),
+    status: statusFor(toId, board),
     quals: [],
   };
   const remaining = { ...board, incoming: board.incoming.filter((v) => v.id !== volunteerId) };
