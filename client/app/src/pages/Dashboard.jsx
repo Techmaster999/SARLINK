@@ -63,6 +63,10 @@ export {
   SHOWN_STATUSES,
   INCIDENT_TYPES,
   INCIDENT_LEVELS,
+  EtaDisplay,
+  formatEta,
+  useCurrentTime,
+  getEtaStatus,
 };
 
 export function DragModeIndicator({ isDragEnabled }) {
@@ -195,6 +199,51 @@ function isCommandPostTeam(team) {
   return team?.isCommandPost === true || type === "command post" || name === "command post";
 }
 
+function buildDefaultIncomingVolunteers(baseMs = Date.now()) {
+  return [
+    {
+      id: "vol-1",
+      name: "Handler Lisa Grant",
+      role: "K9 Handler",
+      organization: "El Dorado K9 SAR",
+      requestedTeam: { id: 101, name: "101" },
+      eta: new Date(baseMs + 30 * 1000).toISOString(),
+    },
+    {
+      id: "vol-2",
+      name: "SAR. Marcus Greene",
+      role: "Ground Searcher 1",
+      organization: "EDSAR Volunteer Unit",
+      requestedTeam: { id: 101, name: "101" },
+      eta: new Date(baseMs + 10 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-3",
+      name: "PM. Diane Okafor",
+      role: "Paramedic / Field Medic",
+      organization: "AMR Northern California",
+      requestedTeam: { id: 102, name: "102" },
+      eta: new Date(baseMs + 15 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-4",
+      name: "Spec. Joel Whitmore",
+      role: "Technical Rope Rescue",
+      organization: "CALSAR Volunteer Unit",
+      requestedTeam: { id: 102, name: "102" },
+      eta: new Date(baseMs + 25 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-5",
+      name: "Tech. Amy Chen",
+      role: "USAR — Drone Operator",
+      organization: "Cal OES Drone Team",
+      requestedTeam: null,
+      eta: new Date(baseMs - 5 * 60 * 1000).toISOString(),
+    },
+  ];
+}
+
 export default function Dashboard({
   incidentName = "Operation Granite Peak",
   incidentType = "lost_hiker",
@@ -245,10 +294,21 @@ export default function Dashboard({
 
   const handleDragCancel = useCallback(() => setDragging(null), []);
   const [dashboardVolunteers, setDashboardVolunteers] = useState(volunteers);
+  const [defaultIncoming] = useState(() => buildDefaultIncomingVolunteers());
+  const now = useCurrentTime(60000);
 
   useEffect(() => {
     setDashboardVolunteers(volunteers);
   }, [volunteers]);
+
+  const resolvedIncomingVolunteers = Array.isArray(incomingVolunteers)
+    ? incomingVolunteers
+    : Array.isArray(dashboardVolunteers) &&
+        dashboardVolunteers.some((v) => v?.eta != null || v?.arrivalTime != null)
+      ? dashboardVolunteers.filter(
+          (v) => v?.eta != null || v?.arrivalTime != null
+        )
+      : defaultIncoming;
 
   useEffect(() => {
     return onVolunteerReassigned((membership) => {
