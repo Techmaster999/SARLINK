@@ -13,7 +13,11 @@ const FOREIGN_KEY_VIOLATION = "23503";
 const CHECK_VIOLATION = "23514";
 
 export function getStatusForTeam(team) {
-    return team?.name?.trim().toLowerCase() === "command post" ? "Standby" : "Assigned";
+    const name = String(team?.name ?? "").trim().toLowerCase().replace(/[-_]/g, " ");
+    const type = String(team?.type ?? team?.team_type ?? "").trim().toLowerCase();
+    return team?.isCommandPost === true || name === "command post" || type === "command post"
+        ? "Standby"
+        : "Assigned";
 }
 
 export async function updateVolunteerStatus(volunteerId, teamId, { db = pool } = {}) {

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { DndContext, useDroppable } from "@dnd-kit/core";
 import {
   DndContext,
   DragOverlay,
@@ -31,8 +30,6 @@ import {
   INCIDENT_TYPES,
   INCIDENT_LEVELS,
 } from "./DashboardHeader";
-import { DraggableVolunteerTab } from "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab";
-import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
 import { OperatingTeamCard } from "./OperatingTeamCard";
 import { CommandPostCard } from "./CommandPostCard";
 import { IncomingVolunteersBox } from "./IncomingVolunteersBox";
@@ -44,8 +41,9 @@ import {
 } from "./dashboardSampleData";
 import { applyDrop, createBoard } from "./dashboardBoard";
 import "./Dashboard.css";
-import "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab.css";
 import { onVolunteerReassigned } from "../api/realtime";
+import { reassignVolunteerToTeam } from "../api/team";
+import { EtaDisplay, formatEta, getEtaStatus, useCurrentTime } from "./EtaDisplay";
 
 export {
   CreateTeamModal,
@@ -105,6 +103,9 @@ function isIstMember(member) {
 }
 
 export function getIstMembers(commandPostTeam) {
+  if (Array.isArray(commandPostTeam?.ist)) {
+    return commandPostTeam.ist;
+  }
   const members = Array.isArray(commandPostTeam?.members)
     ? commandPostTeam.members
     : [];
@@ -259,7 +260,6 @@ export default function Dashboard({
   totalPersonnel,
   totalTeams,
   onAddTeam,
-  onCreateTeam,
   onSearchQuals,
   onSignOut,
   isDragEnabled = false,
@@ -282,36 +282,16 @@ export default function Dashboard({
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor),
   );
-
   const handleDragStart = useCallback((event) => {
     setDragging(event.active.data.current ?? null);
   }, []);
-
-  // Status follows the destination: a team = Assigned, the command post = Standby.
-  const handleDragEnd = useCallback(({ active, over }) => {
-    setDragging(null);
-    const toId = over?.data.current?.team?.id;
-    if (toId == null) return;
-    setBoard((prev) => applyDrop(prev, active.data.current, toId));
-  }, []);
-
   const handleDragCancel = useCallback(() => setDragging(null), []);
+
   const [dashboardVolunteers, setDashboardVolunteers] = useState(volunteers);
-  const [defaultIncoming] = useState(() => buildDefaultIncomingVolunteers());
-  const now = useCurrentTime(60000);
 
   useEffect(() => {
     setDashboardVolunteers(volunteers);
   }, [volunteers]);
-
-  const resolvedIncomingVolunteers = Array.isArray(incomingVolunteers)
-    ? incomingVolunteers
-    : Array.isArray(dashboardVolunteers) &&
-        dashboardVolunteers.some((v) => v?.eta != null || v?.arrivalTime != null)
-      ? dashboardVolunteers.filter(
-          (v) => v?.eta != null || v?.arrivalTime != null
-        )
-      : defaultIncoming;
 
   useEffect(() => {
     return onVolunteerReassigned((membership) => {
@@ -322,29 +302,52 @@ export default function Dashboard({
             : volunteer
         )
       );
+      setBoard((current) => {
+        const volunteerId = String(membership.volunteerId);
+        const targetId = String(membership.teamId);
+        const status = String(membership.status || "").toLowerCase();
+        const sameTeam = (left, right) =>
+            String(left).replace(/^team-/, "") === String(right).replace(/^team-/, "");
+        const allMembers = [
+            ...current.teams.flatMap((team) => team.members || []),
+            ...(current.commandPost.roster || []),
+            ...(current.commandPost.ist || []),
+            ...(current.commandPost.standby || []),
+        ];
+        const existingMember = allMembers.find(
+            (member) => String(memberValue(member, "id")) === volunteerId,
+        ) || { id: membership.volunteerId, name: membership.volunteerId };
+        const removeMember = (members) =>
+            members.filter((member) => String(memberValue(member, "id")) !== volunteerId);
+        const updateMember = (member) => ({ ...member, status });
+        const nextTeams = current.teams.map((team) => {
+            const members = removeMember(team.members || []);
+            return sameTeam(team.id, targetId)
+              ? { ...team, members: [...members, updateMember(existingMember)] }
+              : { ...team, members };
+        });
+        const commandPost = current.commandPost;
+        const commandPostId = commandPost.teamId ?? commandPost.id;
+        const nextCommandPost =
+            commandPostId != null && sameTeam(commandPostId, targetId)
+              ? {
+                  ...commandPost,
+                  roster: removeMember(commandPost.roster || []),
+                  ist: removeMember(commandPost.ist || []),
+                  standby: [...removeMember(commandPost.standby || []), updateMember(existingMember)],
+                }
+              : {
+                  ...commandPost,
+                  roster: removeMember(commandPost.roster || []),
+                  ist: removeMember(commandPost.ist || []),
+                  standby: removeMember(commandPost.standby || []),
+                };
+        return { ...current, teams: nextTeams, commandPost: nextCommandPost };
+      });
     });
   }, []);
 
-  // Listen for new teams created by other open dashboards
-  useEffect(() => {
-    return onTeamCreated((incomingTeam) => {
-      if (!incomingTeam) return;
-      if (
-        incomingTeam.incidentId != null &&
-        Number(incomingTeam.incidentId) !== Number(incidentId)
-      ) {
-        return;
-      }
-      setTeams((prev) => {
-        const next = mergeUniqueTeams(prev, [incomingTeam]);
-        writeStoredTeams(incidentId, next);
-        return next;
-      });
-    });
-  }, [incidentId]);
-
   const closeCreateTeamModal = useCallback(() => {
-    setCreateTeamError("");
     closeModalHelper(setIsOpen);
   }, []);
 
@@ -365,72 +368,29 @@ export default function Dashboard({
     if (typeof onAddTeam === "function") {
       onAddTeam();
     }
-    setCreateTeamError("");
     setIsOpen(true);
   }, [onAddTeam]);
 
-  const handleDragStart = useCallback(
-    (event) => {
-      const vol =
-        event?.active?.data?.current?.volunteer ??
-        dashboardVolunteers.find(
-          (v) => String(v.id) === String(event?.active?.id)
-        ) ??
-        null;
-      setActiveVolunteer(vol);
-    },
-    [dashboardVolunteers]
-  );
-
   const handleDragEnd = useCallback(
     async (event) => {
-      setActiveVolunteer(null);
+      setDragging(null);
       const { active, over } = event || {};
       if (!active || !over) return;
-
-      const overId = String(over.id || "");
-      const targetTeamId = overId.startsWith("team-")
-        ? overId.slice("team-".length)
-        : over.data?.current?.team?.id;
-      if (!targetTeamId) return;
-
-      const draggedVolunteer =
-        active.data?.current?.volunteer ||
-        dashboardVolunteers.find(
-          (v) => String(v.id) === String(active.id)
-        ) || {
-          id: active.id,
-          name: String(active.id),
-        };
-
-      setTeams((prev) =>
-        prev.map((team) => {
-          const currentMembers = Array.isArray(team.members)
-            ? team.members
-            : [];
-          const withoutVolunteer = currentMembers.filter(
-            (m) => String(memberValue(m, "id")) !== String(draggedVolunteer.id)
-          );
-          if (String(team.id) === String(targetTeamId)) {
-            return {
-              ...team,
-              members: [...withoutVolunteer, draggedVolunteer],
-            };
-          }
-          return {
-            ...team,
-            members: withoutVolunteer,
-          };
-        })
-      );
-
+      const targetTeamId = over.data?.current?.team?.id;
+      if (targetTeamId == null) return;
+      const previous = board;
+      const item = active.data?.current;
+      const volunteerId = item?.memberId ?? item?.volunteerId;
+      if (volunteerId == null) return;
+      setBoard((current) => applyDrop(current, item, targetTeamId));
       try {
-        await reassignVolunteerToTeam(draggedVolunteer.id, targetTeamId);
-      } catch {
-        // Keep optimistic UI assignment when backend session is unavailable
+        await reassignVolunteerToTeam(volunteerId, targetTeamId);
+      } catch (error) {
+        setBoard(previous);
+        console.error("Unable to reassign volunteer:", error);
       }
     },
-    [dashboardVolunteers]
+    [board]
   );
 
   const displayedTeamCount =
@@ -508,7 +468,6 @@ export default function Dashboard({
         volunteers={dashboardVolunteers}
         op={op}
         incidentId={incidentId}
-        error={createTeamError}
       />
     </div>
   );
