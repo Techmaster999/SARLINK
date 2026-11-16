@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { DndContext, useDroppable } from "@dnd-kit/core";
 import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  pointerWithin,
+  rectIntersection,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   CreateTeamModal,
   closeCreateTeamModal as closeModalHelper,
   getNextTeamNumber,
@@ -22,18 +33,19 @@ import {
 } from "./DashboardHeader";
 import { DraggableVolunteerTab } from "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab";
 import { DroppableTeamColumn } from "../../../src/components/DroppableTeamColumn/DroppableTeamColumn";
+import { OperatingTeamCard } from "./OperatingTeamCard";
+import { CommandPostCard } from "./CommandPostCard";
+import { IncomingVolunteersBox } from "./IncomingVolunteersBox";
+import {
+  SAMPLE_COMMAND_POST,
+  SAMPLE_INCIDENT_COMMANDER,
+  SAMPLE_INCOMING_VOLUNTEERS,
+  SAMPLE_TEAMS,
+} from "./dashboardSampleData";
+import { applyDrop, createBoard } from "./dashboardBoard";
 import "./Dashboard.css";
-import { api } from "../api/client";
-import {
-  emitTeamCreated,
-  onTeamCreated,
-  onVolunteerReassigned,
-} from "../api/realtime";
-import {
-  createTeam,
-  fetchTeams,
-  reassignVolunteerToTeam,
-} from "../api/team";
+import "../../../src/components/DraggableVolunteerTab/DraggableVolunteerTab.css";
+import { onVolunteerReassigned } from "../api/realtime";
 
 export {
   CreateTeamModal,
@@ -52,7 +64,10 @@ export {
   SHOWN_STATUSES,
   INCIDENT_TYPES,
   INCIDENT_LEVELS,
-  createTeam,
+  EtaDisplay,
+  formatEta,
+  useCurrentTime,
+  getEtaStatus,
 };
 
 export function DragModeIndicator({ isDragEnabled }) {
@@ -173,200 +188,61 @@ export function IstSubTeam({ members = [] }) {
   );
 }
 
+// Pointer position decides the drop target; keyboard drags fall back to overlap.
+function collisionDetection(args) {
+  const hits = pointerWithin(args);
+  return hits.length > 0 ? hits : rectIntersection(args);
+}
+
 function isCommandPostTeam(team) {
   const type = String(team?.type ?? team?.teamType ?? "").toLowerCase();
   const name = String(team?.name ?? "").toLowerCase().replace(/[-_]/g, " ");
   return team?.isCommandPost === true || type === "command post" || name === "command post";
 }
 
-export function normalizeTeam(team = {}) {
-  const rawColor = String(team?.color ?? "").trim();
-  const rawAccent = String(team?.accent ?? "").trim();
-  const matchedPalette =
-    TEAM_PALETTE.find(
-      (p) =>
-        p.accent.toLowerCase() === rawAccent.toLowerCase() ||
-        p.accent.toLowerCase() === rawColor.toLowerCase() ||
-        p.name.toLowerCase() === rawColor.toLowerCase()
-    ) || TEAM_PALETTE[0];
-
-  const accent =
-    rawAccent ||
-    (rawColor.startsWith("#") ? rawColor : matchedPalette.accent);
-  const tint = team?.tint || matchedPalette.tint;
-  const name = String(team?.name ?? team?.number ?? "").trim();
-  const leader =
-    String(
-      team?.leader ?? team?.leaderName ?? team?.leaderId ?? "Unassigned"
-    ).trim() || "Unassigned";
-
-  return {
-    ...team,
-    id: team?.id ?? `team-${name || "new"}`,
-    name,
-    number: String(team?.number ?? name),
-    leader,
-    leaderId: team?.leaderId ?? leader,
-    color: rawColor || matchedPalette.name,
-    accent,
-    tint,
-    members: Array.isArray(team?.members) ? team.members : [],
-  };
-}
-
-export function TeamColumn({
-  team,
-  activeVolunteer = null,
-  currentVolunteerTeamId = null,
-}) {
-  const normalized = normalizeTeam(team);
-  const droppableId = `team-${normalized.id}`;
-  const isCurrentTeam =
-    currentVolunteerTeamId != null &&
-    String(currentVolunteerTeamId) === String(normalized.id);
-
-  const { isOver, setNodeRef } = useDroppable({
-    id: droppableId,
-    disabled: isCurrentTeam,
-    data: { team: normalized },
-  });
-
-  const isHighlighted = Boolean(isOver && !isCurrentTeam);
-
-  return (
-    <div
-      className="sar-team-card"
-      data-testid={`team-column-${normalized.id}`}
-      data-team-name={normalized.name}
-      data-team-color={normalized.color}
-      style={{ borderColor: `${normalized.accent}40` }}
-    >
-      <div
-        className="sar-team-card__header"
-        style={{ backgroundColor: normalized.accent }}
-      >
-        <div>
-          <div className="sar-team-card__eyebrow">Team</div>
-          <div className="sar-team-card__name">{normalized.name}</div>
-          <div className="sar-team-card__leader">
-            Leader: {normalized.leader}
-          </div>
-        </div>
-      </div>
-      <div
-        ref={setNodeRef}
-        className={`sar-team-card__body sar-team-column${
-          isHighlighted ? " sar-team-column--drop-target" : ""
-        }`}
-        role="group"
-        aria-label={`${normalized.name} team`}
-        data-team-id={normalized.id}
-        data-drop-target={isHighlighted}
-        style={{
-          backgroundColor: normalized.tint,
-          "--team-tint": normalized.tint,
-          "--team-accent": normalized.accent,
-          "--team-active-tint": `${normalized.accent}12`,
-          "--team-active-border": `${normalized.accent}60`,
-        }}
-      >
-        {isCommandPostTeam(normalized) ? (
-          <>
-            <IstSubTeam members={getIstMembers(normalized)} />
-            <div className="sar-standby-list">
-              <div className="sar-standby-list__heading">
-                <span>Standby volunteers</span>
-                <span>{getStandbyMembers(normalized).length}</span>
-              </div>
-              {getStandbyMembers(normalized).length > 0 ? (
-                getStandbyMembers(normalized).map((member, index) => (
-                  <CompactVolunteerTab
-                    key={memberValue(member, "id") || `standby-${index}`}
-                    volunteer={member}
-                  />
-                ))
-              ) : (
-                <p className="sar-team-card__empty">
-                  No standby volunteers assigned.
-                </p>
-              )}
-            </div>
-          </>
-        ) : normalized.members.length > 0 ? (
-          normalized.members.map((member, index) => (
-            <CompactVolunteerTab
-              key={memberValue(member, "id") || `member-${index}`}
-              volunteer={member}
-            />
-          ))
-        ) : (
-          <p className="sar-team-card__empty">No members assigned yet.</p>
-        )}
-        {isHighlighted && (
-          <div className="sar-team-column__drop-placeholder">
-            Drop to assign here
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function isTestRuntime() {
-  return (
-    (typeof process !== "undefined" &&
-      Boolean(process.env?.VITEST || process.env?.NODE_ENV === "test")) ||
-    import.meta.env?.MODE === "test"
-  );
-}
-
-function getStorageKey(incidentId) {
-  return `sarlink:teams:incident:${incidentId ?? 1}`;
-}
-
-function readStoredTeams(incidentId) {
-  if (isTestRuntime() || typeof window === "undefined" || !window.localStorage) {
-    return [];
-  }
-  try {
-    const raw = window.localStorage.getItem(getStorageKey(incidentId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(normalizeTeam) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeStoredTeams(incidentId, teamsList) {
-  if (isTestRuntime() || typeof window === "undefined" || !window.localStorage) {
-    return;
-  }
-  try {
-    window.localStorage.setItem(
-      getStorageKey(incidentId),
-      JSON.stringify(teamsList)
-    );
-  } catch {
-    // Ignore storage quota errors
-  }
-}
-
-function mergeUniqueTeams(existing = [], incoming = []) {
-  const result = [...existing.map(normalizeTeam)];
-  for (const item of incoming) {
-    const norm = normalizeTeam(item);
-    const alreadyPresent = result.some(
-      (t) =>
-        String(t.id) === String(norm.id) ||
-        (norm.name &&
-          String(t.name).trim().toLowerCase() === norm.name.toLowerCase())
-    );
-    if (!alreadyPresent) {
-      result.push(norm);
-    }
-  }
-  return result;
+function buildDefaultIncomingVolunteers(baseMs = Date.now()) {
+  return [
+    {
+      id: "vol-1",
+      name: "Handler Lisa Grant",
+      role: "K9 Handler",
+      organization: "El Dorado K9 SAR",
+      requestedTeam: { id: 101, name: "101" },
+      eta: new Date(baseMs + 30 * 1000).toISOString(),
+    },
+    {
+      id: "vol-2",
+      name: "SAR. Marcus Greene",
+      role: "Ground Searcher 1",
+      organization: "EDSAR Volunteer Unit",
+      requestedTeam: { id: 101, name: "101" },
+      eta: new Date(baseMs + 10 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-3",
+      name: "PM. Diane Okafor",
+      role: "Paramedic / Field Medic",
+      organization: "AMR Northern California",
+      requestedTeam: { id: 102, name: "102" },
+      eta: new Date(baseMs + 15 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-4",
+      name: "Spec. Joel Whitmore",
+      role: "Technical Rope Rescue",
+      organization: "CALSAR Volunteer Unit",
+      requestedTeam: { id: 102, name: "102" },
+      eta: new Date(baseMs + 25 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "vol-5",
+      name: "Tech. Amy Chen",
+      role: "USAR — Drone Operator",
+      organization: "Cal OES Drone Team",
+      requestedTeam: null,
+      eta: new Date(baseMs - 5 * 60 * 1000).toISOString(),
+    },
+  ];
 }
 
 export default function Dashboard({
@@ -375,9 +251,12 @@ export default function Dashboard({
   incidentType = "lost_hiker",
   incidentLevel = "2",
   op = "1",
-  initialTeams = [],
+  initialTeams = SAMPLE_TEAMS,
   volunteers = DEFAULT_INCIDENT_VOLUNTEERS,
-  totalPersonnel = 26,
+  incidentCommander = SAMPLE_INCIDENT_COMMANDER,
+  commandPost = SAMPLE_COMMAND_POST,
+  incomingVolunteers = SAMPLE_INCOMING_VOLUNTEERS,
+  totalPersonnel,
   totalTeams,
   onAddTeam,
   onCreateTeam,
@@ -387,37 +266,52 @@ export default function Dashboard({
   isIstAccount = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [teams, setTeams] = useState(() =>
-    mergeUniqueTeams(initialTeams, readStoredTeams(incidentId))
+  // Everything drag and drop can change lives in one board (see dashboardBoard.js).
+  const [board, setBoard] = useState(() =>
+    createBoard({ teams: initialTeams, commandPost, incoming: incomingVolunteers }),
   );
+  const { teams } = board;
+  // TODO: Only IST members should be able to drag and drop (the server already limits
+  // reassignment to IST via requireIst). Drag is always on for now because login doesn't
+  // record a user's role yet; once it does, gate this on the IST role,
+  // e.g. `isIstAccount && isDragEnabled`.
+  const canDrag = true;
+  const [dragging, setDragging] = useState(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  const handleDragStart = useCallback((event) => {
+    setDragging(event.active.data.current ?? null);
+  }, []);
+
+  // Status follows the destination: a team = Assigned, the command post = Standby.
+  const handleDragEnd = useCallback(({ active, over }) => {
+    setDragging(null);
+    const toId = over?.data.current?.team?.id;
+    if (toId == null) return;
+    setBoard((prev) => applyDrop(prev, active.data.current, toId));
+  }, []);
+
+  const handleDragCancel = useCallback(() => setDragging(null), []);
   const [dashboardVolunteers, setDashboardVolunteers] = useState(volunteers);
-  const [activeVolunteer, setActiveVolunteer] = useState(null);
-  const [createTeamError, setCreateTeamError] = useState("");
+  const [defaultIncoming] = useState(() => buildDefaultIncomingVolunteers());
+  const now = useCurrentTime(60000);
 
   useEffect(() => {
     setDashboardVolunteers(volunteers);
   }, [volunteers]);
 
-  // Load persisted teams for this incident on mount / refresh
-  useEffect(() => {
-    let cancelled = false;
-    fetchTeams(incidentId)
-      .then((serverTeams) => {
-        if (!cancelled && Array.isArray(serverTeams) && serverTeams.length > 0) {
-          setTeams((prev) => {
-            const next = mergeUniqueTeams(prev, serverTeams);
-            writeStoredTeams(incidentId, next);
-            return next;
-          });
-        }
-      })
-      .catch(() => {
-        // Ignore fetch errors when running without backend
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [incidentId]);
+  const resolvedIncomingVolunteers = Array.isArray(incomingVolunteers)
+    ? incomingVolunteers
+    : Array.isArray(dashboardVolunteers) &&
+        dashboardVolunteers.some((v) => v?.eta != null || v?.arrivalTime != null)
+      ? dashboardVolunteers.filter(
+          (v) => v?.eta != null || v?.arrivalTime != null
+        )
+      : defaultIncoming;
 
   useEffect(() => {
     return onVolunteerReassigned((membership) => {
@@ -454,92 +348,18 @@ export default function Dashboard({
     closeModalHelper(setIsOpen);
   }, []);
 
-  const handleCreateTeam = useCallback(
-    async (teamData) => {
-      const candidate = normalizeTeam({ ...teamData, incidentId });
-      if (!candidate.name) {
-        const err = new Error("A team name is required.");
-        setCreateTeamError(err.message);
-        throw err;
-      }
+  const handleCreateTeam = useCallback((newTeam) => {
+    // Team numbers are unique within the operational period.
+    setBoard((prev) =>
+      prev.teams.some((t) => String(t.number) === String(newTeam.number))
+        ? prev
+        : { ...prev, teams: [...prev.teams, newTeam] },
+    );
+    setIsOpen(false);
+  }, []);
 
-      const duplicate = teams.some(
-        (t) =>
-          String(t?.name ?? t?.number ?? "")
-            .trim()
-            .toLowerCase() === candidate.name.toLowerCase()
-      );
-      if (duplicate) {
-        const err = new Error(
-          "The team couldn't be created. A team with this name already exists for this incident."
-        );
-        setCreateTeamError(err.message);
-        throw err;
-      }
-
-      let savedTeam = null;
-      const isApiMocked = Boolean(
-        onCreateTeam ||
-          createTeam?.mock ||
-          api?.post?.mock ||
-          (typeof fetch === "function" &&
-            ("mock" in fetch || "_isMockFunction" in fetch))
-      );
-
-      try {
-        if (typeof onCreateTeam === "function") {
-          savedTeam = await onCreateTeam(candidate);
-        } else {
-          savedTeam = await createTeam(
-            candidate.name,
-            candidate.leaderId || candidate.leader || "Unassigned",
-            candidate.accent,
-            incidentId
-          );
-        }
-      } catch (err) {
-        const shouldFallbackLocal =
-          !isApiMocked && (err?.status === undefined || err?.status === 401);
-        if (!shouldFallbackLocal) {
-          const rawMsg = err?.message || "";
-          const friendlyMsg =
-            rawMsg.toLowerCase().includes("couldn't be created") ||
-            rawMsg.toLowerCase().includes("could not be created")
-              ? rawMsg
-              : `The team couldn't be created.${rawMsg ? ` ${rawMsg}` : ""}`;
-          setCreateTeamError(friendlyMsg);
-          const wrapped = new Error(friendlyMsg);
-          wrapped.status = err?.status;
-          wrapped.fieldErrors = err?.fieldErrors;
-          throw wrapped;
-        }
-        savedTeam = candidate;
-      }
-
-      const finalTeam = normalizeTeam({
-        ...candidate,
-        ...(savedTeam && typeof savedTeam === "object" ? savedTeam : {}),
-        leader:
-          candidate.leader ||
-          savedTeam?.leader ||
-          savedTeam?.leaderId ||
-          "Unassigned",
-        accent: candidate.accent,
-        tint: candidate.tint,
-      });
-
-      setTeams((prev) => {
-        const next = mergeUniqueTeams(prev, [finalTeam]);
-        writeStoredTeams(incidentId, next);
-        return next;
-      });
-      emitTeamCreated(finalTeam);
-      setCreateTeamError("");
-      setIsOpen(false);
-      return finalTeam;
-    },
-    [incidentId, onCreateTeam, teams]
-  );
+  // Teams are shown in number order (101, 102, …).
+  const sortedTeams = [...teams].sort((a, b) => Number(a.number) - Number(b.number));
 
   const handleAddTeam = useCallback(() => {
     if (typeof onAddTeam === "function") {
@@ -615,6 +435,15 @@ export default function Dashboard({
 
   const displayedTeamCount =
     typeof totalTeams === "number" ? totalTeams : teams.length;
+  // Everyone on a team plus everyone at the command post (the IC counts as one).
+  const boardPersonnel =
+    teams.reduce((sum, t) => sum + (Array.isArray(t.members) ? t.members.length : 0), 0) +
+    1 +
+    board.commandPost.roster.length +
+    board.commandPost.ist.length +
+    board.commandPost.standby.length;
+  const displayedPersonnel =
+    typeof totalPersonnel === "number" ? totalPersonnel : boardPersonnel;
 
   return (
     <div className="sar-dashboard">
@@ -623,38 +452,53 @@ export default function Dashboard({
         incidentType={incidentType}
         incidentLevel={incidentLevel}
         op={op}
-        totalPersonnel={totalPersonnel}
+        totalPersonnel={displayedPersonnel}
         totalTeams={displayedTeamCount}
         onAddTeam={handleAddTeam}
         onSearchQuals={onSearchQuals}
         onSignOut={onSignOut}
       />
 
-      <DndContext
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveVolunteer(null)}
-      >
-        <main className="sar-dashboard-main">
-          {isIstAccount && <DragModeIndicator isDragEnabled={isDragEnabled} />}
-          {teams.length === 0 ? (
-            <div className="sar-dashboard-empty">
-              No teams formed yet for OP {op}. Click <strong>Add Team</strong>{" "}
-              to create the first team (starting at 101).
-            </div>
-          ) : (
-            <div className="sar-teams-grid">
-              {teams.map((team) => (
-                <TeamColumn
-                  key={team.id}
-                  team={team}
-                  activeVolunteer={activeVolunteer}
-                />
-              ))}
-            </div>
-          )}
-        </main>
-      </DndContext>
+      <main className="sar-dashboard-main">
+        {isIstAccount && <DragModeIndicator isDragEnabled={isDragEnabled} />}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={collisionDetection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <div className="sar-board">
+            <CommandPostCard
+              icName={incidentCommander}
+              commandPost={board.commandPost}
+              dragEnabled={canDrag}
+            />
+
+            {sortedTeams.length === 0 ? (
+              <div className="sar-dashboard-empty">
+                No teams formed yet for OP {op}. Use Add Team to form the first one.
+              </div>
+            ) : (
+              <div className="sar-teams-grid">
+                {sortedTeams.map((team) => (
+                  <OperatingTeamCard key={team.id} team={team} dragEnabled={canDrag} />
+                ))}
+              </div>
+            )}
+
+            <IncomingVolunteersBox volunteers={board.incoming} dragEnabled={canDrag} />
+          </div>
+
+          <DragOverlay dropAnimation={null}>
+            {dragging ? (
+              <div className="sar-volunteer-tab sar-volunteer-tab--overlay" aria-hidden="true">
+                {dragging.name}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </main>
 
       <CreateTeamModal
         isOpen={isOpen}
