@@ -1,0 +1,189 @@
+/* ArrivalTimeStep.css
+   Assumes these tokens are exposed globally from the design system:
+   --sarlink-surface, --sarlink-text-primary, --sarlink-text-secondary,
+   --sarlink-action, --sarlink-action-hover, --sarlink-action-pressed,
+   --sarlink-border, --sarlink-font
+*/
+
+.arrival-field {
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--sarlink-text-primary);
+  background: var(--sarlink-surface);
+  border: 1px solid var(--sarlink-border);
+  border-radius: 10px;
+  font-family: var(--sarlink-font);
+}
+
+.arrival-field *,
+.arrival-field *::before,
+.arrival-field *::after {
+  box-sizing: inherit;
+}
+
+.arrival-field__header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--sarlink-border);
+}
+
+.arrival-field__eyebrow {
+  margin: 0 0 8px;
+  color: var(--sarlink-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.arrival-field__title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.arrival-field__description {
+  max-width: 620px;
+  margin: 0;
+  color: var(--sarlink-text-secondary);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.arrival-field__body {
+  display: grid;
+  gap: 12px;
+  padding: 24px 32px 32px;
+}
+
+.arrival-field__prompt,
+.arrival-field__input-label {
+  display: block;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.arrival-field__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.arrival-field__preset,
+.arrival-field__pick-time {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 100ms,
+    border-color 100ms,
+    color 100ms;
+}
+
+.arrival-field__preset {
+  min-width: 96px;
+  padding: 0 16px;
+  color: var(--sarlink-text-primary);
+  background: var(--sarlink-surface);
+  border: 1px solid var(--sarlink-border);
+}
+
+.arrival-field__preset:hover {
+  background: var(--sarlink-surface-hover, #f3f4f6);
+}
+
+.arrival-field__preset[aria-pressed="true"] {
+  color: #fff;
+  background: var(--sarlink-action);
+  border-color: var(--sarlink-action);
+}
+
+.arrival-field__pick-time {
+  justify-self: start;
+  padding: 0 24px;
+  color: #fff;
+  background: var(--sarlink-action);
+  border: 1px solid var(--sarlink-action);
+}
+
+.arrival-field__pick-time:hover {
+  background: var(--sarlink-action-hover);
+  border-color: var(--sarlink-action-hover);
+}
+
+.arrival-field__pick-time:active {
+  background: var(--sarlink-action-pressed);
+  border-color: var(--sarlink-action-pressed);
+}
+
+.arrival-field__preset:focus-visible,
+.arrival-field__pick-time:focus-visible,
+.arrival-time-input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--sarlink-action) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.arrival-time-input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  color: var(--sarlink-text-primary);
+  background: var(--sarlink-surface);
+  border: 1.5px solid var(--sarlink-border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 16px;
+}
+
+.arrival-time-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  color: var(--sarlink-text-primary, #0a0a0a);
+  background: var(--sarlink-surface, #ffffff);
+  border: 1.5px solid var(--sarlink-border, #d5d9df);
+  border-radius: 6px;
+  font-family: var(--sarlink-font, Inter, sans-serif);
+  font-size: 16px;
+}
+
+.arrival-time-input:hover {
+  border-color: var(--sarlink-text-secondary, #5b6470);
+}
+
+.arrival-time-input:focus-visible {
+  border-color: var(--sarlink-action, #0b2a5b);
+  outline: 3px solid rgb(11 42 91 / 20%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .arrival-field__header {
+    padding: 20px 16px;
+  }
+
+  .arrival-field__body {
+    padding: 20px 16px 24px;
+  }
+
+  .arrival-field__presets {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .arrival-field__preset {
+    width: 100%;
+  }
+}

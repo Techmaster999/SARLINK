@@ -1,0 +1,235 @@
+:root {
+  --checkin-page-bg: #c4cad4;
+  --checkin-surface: #fff;
+  --checkin-surface-hover: #f3f4f6;
+  --checkin-text: #0a0a0a;
+  --checkin-secondary: #5b6470;
+  --checkin-action: #0b2a5b;
+  --checkin-action-hover: #123a7a;
+  --checkin-action-pressed: #071d40;
+  --checkin-border: #d5d9df;
+  --checkin-font: Inter, sans-serif;
+}
+
+.checkin-page,
+.checkin-page *,
+.checkin-page *::before,
+.checkin-page *::after {
+  box-sizing: border-box;
+}
+
+.checkin-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--checkin-page-bg);
+  color: var(--checkin-text);
+  font-family: var(--checkin-font);
+}
+
+.checkin-topography {
+  position: absolute;
+  inset: 56px 0 0;
+  overflow: hidden;
+  background: var(--checkin-page-bg);
+}
+
+.checkin-nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 56px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  background: var(--checkin-surface);
+  border-bottom: 1px solid var(--checkin-border);
+}
+
+.checkin-home-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: var(--checkin-surface);
+  background: var(--checkin-action);
+  border-radius: 6px;
+}
+
+.checkin-review {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 32px, 520px);
+  margin: 24px auto;
+  padding: 24px;
+  background: var(--checkin-surface);
+  border: 1px solid var(--checkin-border);
+  border-radius: 10px;
+}
+
+.checkin-review h1,
+.checkin-review p {
+  margin: 0 0 8px;
+}
+
+.checkin-review p,
+.checkin-description,
+.checkin-eyebrow {
+  color: var(--checkin-secondary);
+}
+
+.checkin-overlay {
+  position: absolute;
+  z-index: 2;
+  inset: 56px 0 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(10 16 28 / 55%);
+}
+
+.checkin-dialog {
+  display: flex;
+  width: min(100%, 480px);
+  max-height: calc(100vh - 88px);
+  flex-direction: column;
+  overflow: auto;
+  background: var(--checkin-surface);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 30%);
+}
+
+.checkin-dialog__header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--checkin-border);
+}
+
+.checkin-eyebrow,
+.checkin-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.checkin-eyebrow {
+  margin-bottom: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.checkin-dialog h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.checkin-dialog__body {
+  display: grid;
+  gap: 12px;
+  padding: 16px 24px 24px;
+}
+
+.checkin-question,
+.checkin-time-field label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.checkin-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.checkin-dialog__body > .checkin-chip {
+  justify-self: start;
+}
+
+.checkin-chip {
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--checkin-text);
+  background: var(--checkin-surface);
+  border: 1.5px solid var(--checkin-border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 100ms,
+    border-color 100ms,
+    color 100ms;
+}
+
+.checkin-chip:not(.is-selected):hover {
+  background: var(--checkin-surface-hover);
+  border-color: #b0b8c6;
+}
+
+.checkin-chip.is-selected {
+  color: #fff;
+  background: var(--checkin-action);
+  border-color: var(--checkin-action);
+}
+
+.checkin-chip.is-selected:hover {
+  background: var(--checkin-action-hover);
+  border-color: var(--checkin-action-hover);
+}
+
+.checkin-chip:active {
+  color: #fff;
+  background: var(--checkin-action-pressed);
+  border-color: var(--checkin-action-pressed);
+}
+
+.checkin-chip:focus-visible,
+.checkin-next:focus-visible {
+  outline: 3px solid rgb(11 42 91 / 20%);
+  outline-offset: 2px;
+}
+
+.checkin-time-field {
+  display: grid;
+  gap: 8px;
+}
+
+.checkin-dialog__footer {
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--checkin-border);
+}
+
+.checkin-next {
+  width: 100%;
+  min-height: 48px;
+  color: #fff;
+  background: var(--checkin-action);
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 100ms;
+}
+
+.checkin-next:hover {
+  background: var(--checkin-action-hover);
+}
+
+.checkin-next:active {
+  background: var(--checkin-action-pressed);
+}
+
+@media (max-width: 560px) {
+  .checkin-overlay {
+    align-items: end;
+    padding: 0;
+  }
+
+  .checkin-dialog {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+}

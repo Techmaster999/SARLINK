@@ -8,6 +8,7 @@ React Hook Form: manages form values
 */ 
 
 import { useFormContext } from "react-hook-form";
+import "./ArrivalTimeField.css";
 
 export function handleArrivalTimeChange(arrivalTime, setValue) {
   setValue("arrivalTime", arrivalTime, {
@@ -27,6 +28,7 @@ export default function ArrivalTimeField() {
   return (
     <input
       id="arrivalTime"
+      className="arrival-time-input"
       type="time"
       step={300}
       value={arrivalTime}

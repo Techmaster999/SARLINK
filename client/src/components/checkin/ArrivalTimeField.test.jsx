@@ -27,16 +27,19 @@ describe("ArrivalTimeField", () => {
     render(<FormHarness onSubmit={onSubmit} />);
 
     const input = screen.getByLabelText("Arrival time");
-    fireEvent.change(input, { target: { value: "14:30" } });
 
+    expect(input.classList.contains("arrival-time-input")).toBe(true);
+
+    fireEvent.change(input, { target: { value: "14:30" } });
     expect(input.value).toBe("14:30");
 
     fireEvent.submit(screen.getByRole("form", { name: "Check-in" }));
 
     await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalled();
+      expect(onSubmit).toHaveBeenCalledWith(
+        { arrivalTime: "14:30" },
+        expect.anything(),
+      );
     });
-
-    expect(onSubmit.mock.calls[0][0]).toEqual({ arrivalTime: "14:30" });
   });
 });
