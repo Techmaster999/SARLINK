@@ -14,6 +14,7 @@ export async function findIncomingVolunteers(incidentId, db = pool) {
     `SELECT i.id     AS incident_id,
             v.id     AS volunteer_id,
             v.name,
+            v.role,
             v.eta,
             t.id     AS team_id,
             t.name   AS team_name
@@ -47,11 +48,41 @@ export async function saveVolunteerStatus(volunteerId, status, db = pool) {
   return rows[0] ? { volunteerId: String(rows[0].id), status: rows[0].status } : null;
 }
 
+/**
+ * Saves a volunteer's check-in to the incident with status 'Incoming' and returns
+ * the saved check-in along with the incident's name (for the confirmation).
+ */
+export async function insertCheckIn({ incidentId, name, role, eta }, db = pool) {
+  const { rows } = await db.query(
+    `WITH v AS (
+       INSERT INTO volunteers (incident_id, name, role, eta, status)
+       VALUES ($1, $2, $3, $4, 'Incoming')
+       RETURNING *
+     )
+     SELECT v.*, i.incident_name
+       FROM v
+       JOIN incidents i ON i.id = v.incident_id`,
+    [incidentId, name, role, eta ?? null],
+  );
+  const row = rows[0];
+  return {
+    id: Number(row.id),
+    incidentId: Number(row.incident_id),
+    incidentName: row.incident_name,
+    name: row.name,
+    role: row.role,
+    status: row.status,
+    eta: row.eta ? row.eta.toISOString() : null,
+    createdAt: row.created_at.toISOString(),
+  };
+}
+
 // Database row (snake_case) → API shape (camelCase).
 function toIncomingVolunteer(row) {
   return {
     id: Number(row.volunteer_id),
     name: row.name,
+    role: row.role ?? null,
     // No requested team → null instead of an error.
     requestedTeam: row.team_id == null ? null : { id: Number(row.team_id), name: row.team_name },
     eta: row.eta ? row.eta.toISOString() : null,

@@ -43,6 +43,7 @@ import { applyDrop, createBoard } from "./dashboardBoard";
 import "./Dashboard.css";
 import { onVolunteerReassigned } from "../api/realtime";
 import { reassignVolunteerToTeam } from "../api/team";
+import { fetchIncomingVolunteers } from "../api/volunteer";
 import { EtaDisplay, formatEta, getEtaStatus, useCurrentTime } from "./EtaDisplay";
 
 export {
@@ -298,6 +299,23 @@ export default function Dashboard({
   useEffect(() => {
     setDashboardVolunteers(Array.isArray(volunteers) ? volunteers : []);
   }, [volunteers]);
+
+  // Load the incident's real incoming volunteers (with their team assignment/role).
+  // If the request fails (e.g. 401 until the API server loads sessions), keep the
+  // current list so the panel still renders.
+  useEffect(() => {
+    let cancelled = false;
+    fetchIncomingVolunteers(incidentId)
+      .then((incoming) => {
+        if (!cancelled) setBoard((current) => ({ ...current, incoming }));
+      })
+      .catch((error) => {
+        if (!cancelled) console.warn("Using placeholder incoming volunteers:", error.message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [incidentId]);
 
   useEffect(() => {
     return onVolunteerReassigned((membership) => {

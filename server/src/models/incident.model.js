@@ -21,6 +21,26 @@ export async function fetchActiveIncidents({ search } = {}) {
     return rows.map(toDashboardIncident);
 }
 
+/**
+ * Team assignments (called team ids such as 'k9-area') available for the incident,
+ * in the order they were called.
+ *
+ * Returns null if the incident doesn't exist, or an array (possibly empty) if it does.
+ */
+export async function findIncidentTeamAssignments(incidentId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT i.id AS incident_id, ct.team_id
+       FROM incidents i
+       LEFT JOIN incident_called_teams ct ON ct.incident_id = i.id
+      WHERE i.id = $1
+      ORDER BY ct.position ASC NULLS LAST, ct.team_id ASC`,
+    [incidentId],
+  );
+
+  if (rows.length === 0) return null;
+  return rows.filter((row) => row.team_id != null).map((row) => row.team_id);
+}
+
 export async function insertIncident(incident, db = pool) {
   const client = await db.connect();
   try {
