@@ -186,6 +186,7 @@
 }
 
 .checkin-chip:focus-visible,
+.checkin-back:focus-visible,
 .checkin-next:focus-visible {
   outline: 3px solid rgb(11 42 91 / 20%);
   outline-offset: 2px;
@@ -197,20 +198,37 @@
 }
 
 .checkin-dialog__footer {
+  display: flex;
+  gap: 8px;
   padding: 12px 24px 16px;
   border-top: 1px solid var(--checkin-border);
 }
 
+.checkin-back,
 .checkin-next {
-  width: 100%;
+  width: 50%;
   min-height: 48px;
-  color: #fff;
-  background: var(--checkin-action);
-  border: 0;
   border-radius: 6px;
   font: inherit;
   cursor: pointer;
   transition: background-color 100ms;
+}
+
+.checkin-back {
+  color: var(--checkin-text);
+  background: var(--checkin-surface);
+  border: 1px solid var(--checkin-border);
+}
+
+.checkin-back:hover {
+  background: var(--checkin-surface-hover);
+}
+
+.checkin-next {
+  margin-left: auto;
+  color: #fff;
+  background: var(--checkin-action);
+  border: 0;
 }
 
 .checkin-next:hover {

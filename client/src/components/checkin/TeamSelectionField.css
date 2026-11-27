@@ -1,0 +1,74 @@
+.team-selection-field,
+.team-selection-field *,
+.team-selection-field *::before,
+.team-selection-field *::after {
+  box-sizing: border-box;
+}
+
+.team-selection-field {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.team-selection-field__legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.team-selection-option {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--sarlink-text-primary, #0a0a0a);
+  background: var(--sarlink-surface, #fff);
+  border: 1.5px solid var(--sarlink-border, #d5d9df);
+  border-radius: 6px;
+  font-family: var(--sarlink-font, Inter, sans-serif);
+  font-size: 16px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    background-color 100ms,
+    border-color 100ms;
+}
+
+.team-selection-option:hover {
+  background: var(--sarlink-surface-hover, #f3f4f6);
+  border-color: #b0b8c6;
+}
+
+.team-selection-option.is-selected {
+  background: #f0f4fa;
+  border-color: var(--sarlink-action, #0b2a5b);
+}
+
+.team-selection-option__radio {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  margin: 0;
+  accent-color: var(--sarlink-action, #0b2a5b);
+}
+
+.team-selection-option:focus-within {
+  outline: 3px solid rgb(11 42 91 / 20%);
+  outline-offset: 2px;
+}
+
+.team-selection-field__error {
+  margin: 0;
+  color: var(--sarlink-error, #b42318);
+  font-family: var(--sarlink-font, Inter, sans-serif);
+  font-size: 14px;
+}

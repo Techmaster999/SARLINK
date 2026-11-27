@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 import ArrivalTimeField from "../../../src/components/checkin/ArrivalTimeField";
+import TeamSelectionField from "../../../src/components/checkin/TeamSelectionField";
+import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
 import "./CheckIn.css";
 
 function TopoBackground() {
@@ -41,7 +43,8 @@ function TopoBackground() {
 }
 
 export default function CheckIn() {
-  const methods = useForm({ defaultValues: { arrivalTime: "" } });
+  const methods = useCheckInForm();
+  const [currentStep, setCurrentStep] = useState(1);
   const [showTimeInput, setShowTimeInput] = useState(false);
   const [selectedArrival, setSelectedArrival] = useState(null);
   const presets = [
@@ -71,65 +74,94 @@ export default function CheckIn() {
             className="checkin-dialog"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="arrival-title"
+            aria-labelledby="checkin-step-title"
           >
             <header className="checkin-dialog__header">
-              <p className="checkin-eyebrow">STEP 1 OF 3</p>
-              <h2 id="arrival-title">Arrival and check-out</h2>
+              <p className="checkin-eyebrow">STEP {currentStep} OF 3</p>
+              <h2 id="checkin-step-title">
+                {currentStep === 1 ? "Arrival and check-out" : "Team assignment"}
+              </h2>
               <p className="checkin-description">
-                When you expect to arrive and whether you have to leave by a set time.
+                {currentStep === 1
+                  ? "When you expect to arrive and whether you have to leave by a set time."
+                  : "Which team do you want to be assigned to?"}
               </p>
             </header>
 
             <form
-              onSubmit={methods.handleSubmit(({ arrivalTime }) =>
-                console.info("Check-in arrival time:", arrivalTime)
+              onSubmit={methods.handleSubmit(({ arrivalTime, team }) =>
+                console.info("Check-in details:", { arrivalTime, team })
               )}
             >
-              <div className="checkin-dialog__body">
-                <p className="checkin-question">When will you arrive?</p>
+              {currentStep === 1 ? (
+                <div className="checkin-dialog__body">
+                  <p className="checkin-question">When will you arrive?</p>
 
-                <div className="checkin-presets">
-                  {presets.map(({ id, label }) => (
-                    <button
-                      key={id}
-                      className={`checkin-chip ${selectedArrival === id ? "is-selected" : ""}`}
-                      type="button"
-                      aria-pressed={selectedArrival === id}
-                      onClick={() => {
-                        setSelectedArrival(id);
-                        setShowTimeInput(false);
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  className={`checkin-chip ${selectedArrival === "custom" ? "is-selected" : ""}`}
-                  type="button"
-                  aria-pressed={selectedArrival === "custom"}
-                  onClick={() => {
-                    setSelectedArrival("custom");
-                    setShowTimeInput(true);
-                  }}
-                >
-                  Pick a time
-                </button>
-
-                {showTimeInput && (
-                  <div className="checkin-time-field">
-                    <label htmlFor="arrivalTime">
-                      Arrival time (24-hour, e.g. 1430)
-                    </label>
-                    <ArrivalTimeField />
+                  <div className="checkin-presets">
+                    {presets.map(({ id, label }) => (
+                      <button
+                        key={id}
+                        className={`checkin-chip ${selectedArrival === id ? "is-selected" : ""}`}
+                        type="button"
+                        aria-pressed={selectedArrival === id}
+                        onClick={() => {
+                          setSelectedArrival(id);
+                          setShowTimeInput(false);
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                )}
-              </div>
+
+                  <button
+                    className={`checkin-chip ${selectedArrival === "custom" ? "is-selected" : ""}`}
+                    type="button"
+                    aria-pressed={selectedArrival === "custom"}
+                    onClick={() => {
+                      setSelectedArrival("custom");
+                      setShowTimeInput(true);
+                    }}
+                  >
+                    Pick a time
+                  </button>
+
+                  {showTimeInput && (
+                    <div className="checkin-time-field">
+                      <label htmlFor="arrivalTime">
+                        Arrival time (24-hour, e.g. 1430)
+                      </label>
+                      <ArrivalTimeField />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="checkin-dialog__body">
+                  <TeamSelectionField />
+                </div>
+              )}
 
               <footer className="checkin-dialog__footer">
-                <button className="checkin-next" type="submit">Next</button>
+                {currentStep === 2 && (
+                  <button
+                    className="checkin-back"
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                  >
+                    Back
+                  </button>
+                )}
+                {currentStep === 1 ? (
+                  <button
+                    className="checkin-next"
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button className="checkin-next" type="submit">Next</button>
+                )}
               </footer>
             </form>
           </section>
