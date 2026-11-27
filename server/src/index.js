@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import incidentRouter from './routes/incident.routes.js';
 import teamRouter from './routes/team.routes.js';
+import checkInRouter from './routes/checkIn.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { initRealtime } from './realtime/socket.js';
 
@@ -12,6 +13,7 @@ app.use(express.json());
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api/incidents', incidentRouter);
 app.use('/api/teams', teamRouter);
+app.use('/api/check-ins', checkInRouter);
 app.use(errorHandler);
 
 const server = app.listen(port, '0.0.0.0', () => {
