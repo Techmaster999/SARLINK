@@ -197,6 +197,39 @@
   gap: 8px;
 }
 
+.checkin-checkout-field {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checkin-checkout-note {
+  margin: 0;
+  color: var(--checkin-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.checkin-checkout-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--checkin-text);
+  background: var(--checkin-surface);
+  border: 1.5px solid var(--checkin-border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.checkin-checkout-input:focus-visible {
+  border-color: var(--checkin-action);
+  outline: 3px solid rgb(11 42 91 / 20%);
+  outline-offset: 2px;
+}
+
 .checkin-dialog__footer {
   display: flex;
   gap: 8px;

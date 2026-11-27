@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { FormProvider } from "react-hook-form";
 import ArrivalTimeField from "../../../src/components/checkin/ArrivalTimeField";
 import AvailableResourcesField from "../../../src/components/checkin/AvailableResourcesField";
+import CheckoutTimeField from "../../../src/components/checkin/CheckoutTimeField";
 import TeamSelectionField from "../../../src/components/checkin/TeamSelectionField";
 import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
 import "./CheckIn.css";
 
+
 function TopoBackground() {
   const stroke = "rgba(10,10,10,0.07)";
+
 
   return (
     <div className="checkin-topography" aria-hidden="true">
@@ -42,6 +45,7 @@ function TopoBackground() {
     </div>
   );
 }
+
 
 export default function CheckIn() {
   const methods = useCheckInForm();
@@ -103,9 +107,13 @@ export default function CheckIn() {
                 hasDog,
                 dogNames,
                 dogDisciplines,
+                hasHardCheckoutTime,
+                checkoutTime,
                 ...checkInData
               }) => console.info("Check-in details:", {
                 ...checkInData,
+                hasHardCheckoutTime,
+                checkoutTime: checkoutTime || null,
                 equipmentOther: checkInData.equipmentOther.trim() || null,
                 vehicle: hasVehicle
                   ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
@@ -156,6 +164,7 @@ export default function CheckIn() {
                       <ArrivalTimeField />
                     </div>
                   )}
+                  <CheckoutTimeField />
                 </div>
               ) : currentStep === 2 ? (
                 <div className="checkin-dialog__body">
