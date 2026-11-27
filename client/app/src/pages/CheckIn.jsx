@@ -131,7 +131,6 @@ export default function CheckIn() {
                 });
               })}
             >
-            >
               {currentStep === 1 ? (
                 <div className="checkin-dialog__body">
                   <p className="checkin-question">When will you arrive?</p>
