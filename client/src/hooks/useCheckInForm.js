@@ -7,6 +7,14 @@ export function useCheckInForm() {
     defaultValues: {
       arrivalTime: "", // DT-173: default value for arrival time field
       team: "",
+      equipment: [],
+      equipmentOther: "",
+      hasVehicle: null,
+      vehicleType: "",
+      vehicleDescription: "",
+      hasDog: null,
+      dogNames: "",
+      dogDisciplines: [],
     },
     mode: "onChange",
   });

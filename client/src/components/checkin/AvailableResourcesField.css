@@ -1,0 +1,104 @@
+.available-resources,
+.available-resources *,
+.available-resources *::before,
+.available-resources *::after {
+  box-sizing: border-box;
+}
+
+.available-resources {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  color: var(--sarlink-text-primary, #0a0a0a);
+  font-family: var(--sarlink-font, Inter, sans-serif);
+}
+
+.available-resources__group {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.available-resources__label,
+.available-resources__text-field label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.available-resources__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.available-resources__chip {
+  min-height: 36px;
+  padding: 0 14px;
+  color: var(--sarlink-text-primary, #0a0a0a);
+  background: var(--sarlink-surface, #fff);
+  border: 1.5px solid var(--sarlink-border, #d5d9df);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 100ms,
+    border-color 100ms,
+    color 100ms;
+}
+
+.available-resources__chip:hover {
+  background: var(--sarlink-surface-hover, #f3f4f6);
+  border-color: #b0b8c6;
+}
+
+.available-resources__chip[aria-pressed="true"] {
+  color: var(--sarlink-action-label, #fff);
+  background: var(--sarlink-action, #0b2a5b);
+  border-color: var(--sarlink-action, #0b2a5b);
+}
+
+.available-resources__chip[aria-pressed="true"]:hover {
+  background: var(--sarlink-action-hover, #123a7a);
+  border-color: var(--sarlink-action-hover, #123a7a);
+}
+
+.available-resources__chip:focus-visible,
+.available-resources__text-field input:focus-visible {
+  outline: 3px solid rgb(11 42 91 / 20%);
+  outline-offset: 2px;
+}
+
+.available-resources__text-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.available-resources__optional {
+  color: var(--sarlink-text-secondary, #5b6470);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.available-resources__text-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--sarlink-text-primary, #0a0a0a);
+  background: var(--sarlink-surface, #fff);
+  border: 1.5px solid var(--sarlink-border, #d5d9df);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.available-resources__text-field input:focus {
+  border-color: var(--sarlink-action, #0b2a5b);
+}

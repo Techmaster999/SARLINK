@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FormProvider } from "react-hook-form";
 import ArrivalTimeField from "../../../src/components/checkin/ArrivalTimeField";
+import AvailableResourcesField from "../../../src/components/checkin/AvailableResourcesField";
 import TeamSelectionField from "../../../src/components/checkin/TeamSelectionField";
 import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
 import "./CheckIn.css";
@@ -79,19 +80,40 @@ export default function CheckIn() {
             <header className="checkin-dialog__header">
               <p className="checkin-eyebrow">STEP {currentStep} OF 3</p>
               <h2 id="checkin-step-title">
-                {currentStep === 1 ? "Arrival and check-out" : "Team assignment"}
+                {currentStep === 1
+                  ? "Arrival and check-out"
+                  : currentStep === 2
+                    ? "Team assignment"
+                    : "Equipment, vehicles and dogs"}
               </h2>
               <p className="checkin-description">
                 {currentStep === 1
                   ? "When you expect to arrive and whether you have to leave by a set time."
-                  : "Which team do you want to be assigned to?"}
+                  : currentStep === 2
+                    ? "Which team do you want to be assigned to?"
+                    : "What you're bringing to this incident."}
               </p>
             </header>
 
             <form
-              onSubmit={methods.handleSubmit(({ arrivalTime, team }) =>
-                console.info("Check-in details:", { arrivalTime, team })
-              )}
+              onSubmit={methods.handleSubmit(({
+                hasVehicle,
+                vehicleType,
+                vehicleDescription,
+                hasDog,
+                dogNames,
+                dogDisciplines,
+                ...checkInData
+              }) => console.info("Check-in details:", {
+                ...checkInData,
+                equipmentOther: checkInData.equipmentOther.trim() || null,
+                vehicle: hasVehicle
+                  ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
+                  : null,
+                dogs: hasDog
+                  ? { names: dogNames.trim(), disciplines: dogDisciplines }
+                  : null,
+              }))}
             >
               {currentStep === 1 ? (
                 <div className="checkin-dialog__body">
@@ -135,32 +157,36 @@ export default function CheckIn() {
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : currentStep === 2 ? (
                 <div className="checkin-dialog__body">
                   <TeamSelectionField />
+                </div>
+              ) : (
+                <div className="checkin-dialog__body">
+                  <AvailableResourcesField />
                 </div>
               )}
 
               <footer className="checkin-dialog__footer">
-                {currentStep === 2 && (
+                {currentStep > 1 && (
                   <button
                     className="checkin-back"
                     type="button"
-                    onClick={() => setCurrentStep(1)}
+                    onClick={() => setCurrentStep((step) => step - 1)}
                   >
                     Back
                   </button>
                 )}
-                {currentStep === 1 ? (
+                {currentStep < 3 ? (
                   <button
                     className="checkin-next"
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => setCurrentStep((step) => step + 1)}
                   >
                     Next
                   </button>
                 ) : (
-                  <button className="checkin-next" type="submit">Next</button>
+                  <button className="checkin-next" type="submit">Review my details</button>
                 )}
               </footer>
             </form>
