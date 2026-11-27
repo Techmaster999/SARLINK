@@ -1,6 +1,31 @@
 import { pool } from '../config/db.js';
 
 /**
+ * Retrieves a check-in record by ID along with any saved resource types.
+ * Returns null if the check-in does not exist.
+ */
+export async function findCheckInById(checkInId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT * FROM volunteer_check_ins WHERE id = $1`,
+    [checkInId],
+  );
+  if (!rows[0]) return null;
+
+  const checkIn = toCheckIn(rows[0]);
+  const resourceResult = await db.query(
+    `SELECT resource_type
+       FROM volunteer_check_in_resources
+      WHERE check_in_id = $1
+      ORDER BY resource_type`,
+    [checkInId],
+  );
+  checkIn.resources = Array.isArray(resourceResult?.rows)
+    ? resourceResult.rows.map((r) => r.resource_type)
+    : [];
+  return checkIn;
+}
+
+/**
  * Saves the team on the check-in. Returns the updated check-in, or null if the
  * check-in doesn't exist. The database rejects a team that doesn't exist or belongs
  * to a different incident (foreign key volunteer_check_ins_team_fkey).
@@ -42,7 +67,8 @@ export async function markCheckInSubmitted(checkInId, db = pool) {
  * submitted (nothing is changed), otherwise { checkInId, volunteerId, incidentId, resources }.
  */
 export async function replaceCheckInResources(checkInId, resourceTypes, db = pool) {
-  const client = await db.connect();
+  const hasConnect = typeof db?.connect === "function";
+  const client = hasConnect ? await db.connect() : db;
   try {
     await client.query("BEGIN");
 
@@ -79,7 +105,9 @@ export async function replaceCheckInResources(checkInId, resourceTypes, db = poo
     await client.query("ROLLBACK");
     throw err;
   } finally {
-    client.release();
+    if (hasConnect && typeof client?.release === "function") {
+      client.release();
+    }
   }
 }
 

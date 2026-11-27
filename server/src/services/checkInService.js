@@ -1,4 +1,9 @@
-import { saveCheckInTeam, markCheckInSubmitted, replaceCheckInResources } from "../models/checkIn.model.js";
+import {
+    findCheckInById,
+    saveCheckInTeam,
+    markCheckInSubmitted,
+    replaceCheckInResources,
+} from "../models/checkIn.model.js";
 import { findTeamById } from "../models/team.model.js";
 import { pool } from "../config/db.js";
 import { HttpError } from "../utils/httpError.js";
@@ -7,6 +12,40 @@ const FOREIGN_KEY_VIOLATION = "23503";
 const UNIQUE_VIOLATION = "23505";
 const CHECK_VIOLATION = "23514";
 const CHECK_IN_LOCKED = "SL409"; // raised by the trigger in migration 007
+
+function parsePositiveId(value, fieldName, label) {
+    if (value === undefined || value === null || value === "" || typeof value === "boolean") {
+        throw new HttpError(400, `${label} must be a positive whole number.`, {
+            [fieldName]: `${label} must be a positive whole number.`,
+        });
+    }
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+        throw new HttpError(400, `${label} must be a positive whole number.`, {
+            [fieldName]: `${label} must be a positive whole number.`,
+        });
+    }
+    return parsed;
+}
+
+/**
+ * DT-193: Retrieves a check-in record by ID so resources can be verified against
+ * and associated with the correct volunteer and incident.
+ *
+ * @param {number|string} checkInId
+ * @param {{ db?: object }} [options]
+ * @returns {Promise<object>}
+ */
+export async function getCheckInById(checkInId, { db = pool } = {}) {
+    const parsedId = parsePositiveId(checkInId, "checkInId", "Check-in ID");
+    const checkIn = await findCheckInById(parsedId, db);
+    if (!checkIn) {
+        throw new HttpError(404, "That check-in doesn't exist.", {
+            checkInId: "That check-in doesn't exist.",
+        });
+    }
+    return checkIn;
+}
 
 /**
  * Locks a check-in after the volunteer submits it. From then on the database rejects any
@@ -46,10 +85,38 @@ export function rethrowIfCheckInLocked(err) {
  * @returns {Promise<{ checkInId: number, volunteerId: number, incidentId: number,
  *   resources: string[] }>}
  */
-export async function saveVolunteerResources(checkInId, resources, { db = pool } = {}) {
+export async function saveVolunteerResources(
+    checkInId,
+    resources,
+    { volunteerId, incidentId, db = pool } = {}
+) {
+    const checkIn = await getCheckInById(checkInId, { db });
+
+    if (volunteerId !== undefined && volunteerId !== null) {
+        const parsedVolunteerId = parsePositiveId(volunteerId, "volunteerId", "Volunteer ID");
+        if (Number(checkIn.volunteerId) !== parsedVolunteerId) {
+            throw new HttpError(403, "Resources cannot be assigned to another volunteer's check-in.", {
+                volunteerId: "Resources cannot be assigned to another volunteer's check-in.",
+            });
+        }
+    }
+
+    if (incidentId !== undefined && incidentId !== null) {
+        const parsedIncidentId = parsePositiveId(incidentId, "incidentId", "Incident ID");
+        if (Number(checkIn.incidentId) !== parsedIncidentId) {
+            throw new HttpError(409, "That check-in belongs to a different incident.", {
+                incidentId: "That check-in belongs to a different incident.",
+            });
+        }
+    }
+
+    if (checkIn.isLocked) {
+        throw new HttpError(409, "This check-in was already submitted and can't be edited.");
+    }
+
     let saved;
     try {
-        saved = await replaceCheckInResources(checkInId, resources, db);
+        saved = await replaceCheckInResources(checkIn.id, resources, db);
     } catch (err) {
         // Backstops for callers that skip validateCheckInResources; the database enforces both.
         if (err.code === UNIQUE_VIOLATION && err.constraint === "volunteer_check_in_resources_pkey") {
