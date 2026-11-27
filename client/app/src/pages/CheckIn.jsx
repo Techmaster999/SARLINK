@@ -4,6 +4,10 @@ import ArrivalTimeField from "../../../src/components/checkin/ArrivalTimeField";
 import AvailableResourcesField from "../../../src/components/checkin/AvailableResourcesField";
 import TeamSelectionField from "../../../src/components/checkin/TeamSelectionField";
 import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
+import {
+  TEAM_REQUIRED_MESSAGE,
+  validateTeamAssignment,
+} from "../../../src/validation/checkInSchema";
 import "./CheckIn.css";
 
 function TopoBackground() {
@@ -104,16 +108,28 @@ export default function CheckIn() {
                 dogNames,
                 dogDisciplines,
                 ...checkInData
-              }) => console.info("Check-in details:", {
-                ...checkInData,
-                equipmentOther: checkInData.equipmentOther.trim() || null,
-                vehicle: hasVehicle
-                  ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
-                  : null,
-                dogs: hasDog
-                  ? { names: dogNames.trim(), disciplines: dogDisciplines }
-                  : null,
-              }))}
+              }) => {
+                // DT-185: the team field's rules don't run once its step is
+                // unmounted, so guard the final values before accepting the check-in.
+                if (validateTeamAssignment(checkInData.team) !== true) {
+                  methods.setError("team", {
+                    type: "required",
+                    message: TEAM_REQUIRED_MESSAGE,
+                  });
+                  setCurrentStep(2); // back to the team step so the error is visible
+                  return;
+                }
+                console.info("Check-in details:", {
+                  ...checkInData,
+                  equipmentOther: checkInData.equipmentOther.trim() || null,
+                  vehicle: hasVehicle
+                    ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
+                    : null,
+                  dogs: hasDog
+                    ? { names: dogNames.trim(), disciplines: dogDisciplines }
+                    : null,
+                });
+              })}
             >
               {currentStep === 1 ? (
                 <div className="checkin-dialog__body">

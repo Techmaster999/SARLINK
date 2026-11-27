@@ -1,8 +1,15 @@
 /* DT-184 Team Selection Field
 function name: handleTeamChange(team) plus any helper functions 
-needed to implement the team selection field. */
+needed to implement the team selection field.
+DT-185 & DT-186: exactly one valid team must be chosen before the check-in
+can be submitted; validation lives in src/validation/checkInSchema.js. */
 
 import { useFormContext } from "react-hook-form";
+import {
+  TEAM_REQUIRED_MESSAGE,
+  validateSingleTeamAssignment,
+  validateTeamAssignment,
+} from "../../validation/checkInSchema";
 import "./TeamSelectionField.css";
 
 const TEAMS = [
@@ -19,7 +26,16 @@ const TEAMS = [
 export default function TeamSelectionField() {
   const { register, setValue, watch, formState: { errors } } = useFormContext();
   const team = watch("team", "");
-  const teamRegistration = register("team", { required: "Choose a team." });
+  // DT-185: a team must be selected. DT-186: only one team id may be submitted.
+  const teamRegistration = register("team", {
+    required: TEAM_REQUIRED_MESSAGE,
+    validate: (teamIds) => {
+      const singleTeamResult = validateSingleTeamAssignment(teamIds);
+      return singleTeamResult === true
+        ? validateTeamAssignment(teamIds)
+        : singleTeamResult;
+    },
+  });
 
   const handleTeamAssignmentChange = (teamId) => {
     setValue("team", teamId, {
