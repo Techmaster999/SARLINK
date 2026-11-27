@@ -1,4 +1,11 @@
-import { saveCheckInTeam, markCheckInSubmitted, replaceCheckInResources } from "../models/checkIn.model.js";
+import {
+    findActiveCheckInByVolunteerId,
+    insertVolunteerCheckIn,
+    markCheckInClosed,
+    saveCheckInTeam,
+    markCheckInSubmitted,
+    replaceCheckInResources,
+} from "../models/checkIn.model.js";
 import { findTeamById } from "../models/team.model.js";
 import { pool } from "../config/db.js";
 import { HttpError } from "../utils/httpError.js";
@@ -110,4 +117,105 @@ export async function assignVolunteerToTeam(checkInId, teamId, { db = pool } = {
         });
     }
     return checkIn;
+}
+
+/**
+ * Checks whether the given volunteer currently has an active (unclosed) incident check-in.
+ *
+ * @param {number|string} volunteerId
+ * @returns {Promise<boolean>}
+ */
+export async function hasActiveIncidentCheckIn(volunteerId, { db = pool } = {}) {
+    const parsedId = Number(volunteerId);
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+        throw new HttpError(400, "Volunteer ID must be a positive whole number.", {
+            volunteerId: "Volunteer ID must be a positive whole number.",
+        });
+    }
+    const existing = await findActiveCheckInByVolunteerId(parsedId, db);
+    return Boolean(existing);
+}
+
+/**
+ * Creates a new incident check-in for a volunteer, enforcing that the volunteer
+ * cannot be checked into more than one active incident at a time.
+ */
+export async function createVolunteerCheckIn(
+    { volunteerId, incidentId, teamId = null },
+    { db = pool } = {},
+) {
+    const parsedVolunteerId = Number(volunteerId);
+    const parsedIncidentId = Number(incidentId);
+
+    if (!Number.isInteger(parsedVolunteerId) || parsedVolunteerId <= 0) {
+        throw new HttpError(400, "Volunteer ID must be a positive whole number.", {
+            volunteerId: "Volunteer ID must be a positive whole number.",
+        });
+    }
+    if (!Number.isInteger(parsedIncidentId) || parsedIncidentId <= 0) {
+        throw new HttpError(400, "Incident ID must be a positive whole number.", {
+            incidentId: "Incident ID must be a positive whole number.",
+        });
+    }
+
+    const alreadyCheckedIn = await hasActiveIncidentCheckIn(parsedVolunteerId, { db });
+    if (alreadyCheckedIn) {
+        throw new HttpError(
+            409,
+            "You are already checked into an active incident and cannot check into more than one incident at a time.",
+            {
+                volunteerId:
+                    "You are already checked into an active incident and cannot check into more than one incident at a time.",
+            },
+        );
+    }
+
+    try {
+        return await insertVolunteerCheckIn(
+            {
+                volunteerId: parsedVolunteerId,
+                incidentId: parsedIncidentId,
+                teamId,
+            },
+            db,
+        );
+    } catch (err) {
+        if (
+            err.code === UNIQUE_VIOLATION &&
+            (err.constraint === "volunteer_check_ins_volunteer_key" ||
+                err.constraint === "volunteer_check_ins_active_volunteer_key")
+        ) {
+            throw new HttpError(
+                409,
+                "You are already checked into an active incident and cannot check into more than one incident at a time.",
+                {
+                    volunteerId:
+                        "You are already checked into an active incident and cannot check into more than one incident at a time.",
+                },
+            );
+        }
+        if (err.code === FOREIGN_KEY_VIOLATION) {
+            throw new HttpError(404, "That volunteer or incident doesn't exist.");
+        }
+        throw err;
+    }
+}
+
+/**
+ * Closes an existing check-in so the volunteer can check into another incident later.
+ */
+export async function closeVolunteerCheckIn(checkInId, { db = pool } = {}) {
+    const parsedId = Number(checkInId);
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+        throw new HttpError(400, "Check-in ID must be a positive whole number.", {
+            checkInId: "Check-in ID must be a positive whole number.",
+        });
+    }
+    const closed = await markCheckInClosed(parsedId, db);
+    if (!closed) {
+        throw new HttpError(404, "That check-in doesn't exist.", {
+            checkInId: "That check-in doesn't exist.",
+        });
+    }
+    return closed;
 }
