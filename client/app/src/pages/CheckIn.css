@@ -212,6 +212,12 @@
   line-height: 1.5;
 }
 
+.checkin-checkout-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 14px;
+}
+
 .checkin-checkout-input {
   width: 100%;
   min-height: 44px;

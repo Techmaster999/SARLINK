@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 
 export default function CheckoutTimeField() {
-  const { setValue, watch, register } = useFormContext();
+  const { clearErrors, formState: { errors }, setValue, watch, register } = useFormContext();
   const hasHardCheckoutTime = watch("hasHardCheckoutTime", null);
   const checkoutTime = watch("checkoutTime", "");
 
@@ -13,6 +13,7 @@ export default function CheckoutTimeField() {
   };
 
   const handleHardCheckoutChange = (hasHardTime) => {
+    clearErrors("hasHardCheckoutTime");
     setValue("hasHardCheckoutTime", hasHardTime, {
       shouldDirty: true,
       shouldValidate: true,
@@ -23,7 +24,11 @@ export default function CheckoutTimeField() {
   };
 
   return (
-    <fieldset className="checkin-checkout-field">
+    <fieldset
+      className="checkin-checkout-field"
+      aria-describedby={errors.hasHardCheckoutTime ? "checkout-answer-error" : undefined}
+      aria-invalid={Boolean(errors.hasHardCheckoutTime)}
+    >
       <legend className="checkin-question">
         Do you have a hard check-out time?
       </legend>
@@ -45,6 +50,11 @@ export default function CheckoutTimeField() {
           ),
         )}
       </div>
+      {errors.hasHardCheckoutTime && (
+        <p id="checkout-answer-error" className="checkin-checkout-error" role="alert">
+          {errors.hasHardCheckoutTime.message}
+        </p>
+      )}
       {hasHardCheckoutTime && (
         <div className="checkin-time-field">
           <label htmlFor="checkoutTime">

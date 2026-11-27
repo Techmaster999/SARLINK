@@ -59,6 +59,19 @@ export default function CheckIn() {
     { id: "120", label: "2 hours" },
   ];
 
+  const handleNext = () => {
+    if (currentStep === 1 && methods.getValues("hasHardCheckoutTime") === null) {
+      methods.setError("hasHardCheckoutTime", {
+        type: "required",
+        message: "Choose yes or no.",
+      });
+      return;
+    }
+
+    methods.clearErrors("hasHardCheckoutTime");
+    setCurrentStep((step) => step + 1);
+  };
+
   return (
     <FormProvider {...methods}>
       <main className="checkin-page">
@@ -190,7 +203,7 @@ export default function CheckIn() {
                   <button
                     className="checkin-next"
                     type="button"
-                    onClick={() => setCurrentStep((step) => step + 1)}
+                    onClick={handleNext}
                   >
                     Next
                   </button>
