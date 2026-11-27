@@ -1,6 +1,46 @@
 import { pool } from '../config/db.js';
 
 /**
+ * Inserts a new volunteer check-in record with the volunteer's attached name and SAR badge number.
+ */
+export async function insertVolunteerCheckIn(
+  {
+    volunteerId,
+    incidentId,
+    name,
+    badgeNumber,
+    arrivalTime = null,
+    checkoutTime = null,
+    teamId = null,
+  },
+  db = pool,
+) {
+  const { rows } = await db.query(
+    `INSERT INTO volunteer_check_ins (
+       volunteer_id,
+       incident_id,
+       volunteer_name,
+       sar_badge_number,
+       arrival_time,
+       checkout_time,
+       team_id
+     )
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [
+      volunteerId,
+      incidentId,
+      name,
+      badgeNumber,
+      arrivalTime,
+      checkoutTime,
+      teamId,
+    ],
+  );
+  return rows[0] ? toCheckIn(rows[0]) : null;
+}
+
+/**
  * Saves the team on the check-in. Returns the updated check-in, or null if the
  * check-in doesn't exist. The database rejects a team that doesn't exist or belongs
  * to a different incident (foreign key volunteer_check_ins_team_fkey).
@@ -87,10 +127,27 @@ export async function replaceCheckInResources(checkInId, resourceTypes, db = poo
 function toCheckIn(row) {
   return {
     id: Number(row.id),
-    volunteerId: Number(row.volunteer_id),
+    volunteerId: row.volunteer_id == null ? null : Number(row.volunteer_id),
     incidentId: Number(row.incident_id),
+    name: row.volunteer_name ?? row.name ?? null,
+    volunteerName: row.volunteer_name ?? row.name ?? null,
+    badgeNumber: row.sar_badge_number ?? row.badge_number ?? null,
+    sarBadgeNumber: row.sar_badge_number ?? row.badge_number ?? null,
+    arrivalTime: row.arrival_time
+      ? row.arrival_time instanceof Date
+        ? row.arrival_time.toISOString()
+        : String(row.arrival_time)
+      : null,
+    checkoutTime: row.checkout_time
+      ? row.checkout_time instanceof Date
+        ? row.checkout_time.toISOString()
+        : String(row.checkout_time)
+      : null,
     teamId: row.team_id == null ? null : Number(row.team_id),
-    checkedInAt: row.checked_in_at.toISOString(),
+    checkedInAt:
+      row.checked_in_at instanceof Date
+        ? row.checked_in_at.toISOString()
+        : String(row.checked_in_at ?? new Date().toISOString()),
     teamAssignedAt: row.team_assigned_at ? row.team_assigned_at.toISOString() : null,
     submittedAt: row.submitted_at ? row.submitted_at.toISOString() : null,
     isLocked: row.submitted_at != null, // the check-in page should render read-only when true
