@@ -2,9 +2,11 @@
 
 import { useForm } from "react-hook-form";
 
-export function useCheckInForm() {
+export function useCheckInForm(volunteer = null) {
   return useForm({
     defaultValues: {
+      volunteerName: volunteer?.name ?? "",
+      sarBadgeNumber: volunteer?.badgeNumber ?? volunteer?.sarBadgeNumber ?? "",
       arrivalTime: "", // DT-173: default value for arrival time field
       team: "",
       equipment: [],

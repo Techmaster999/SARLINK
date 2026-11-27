@@ -1,4 +1,9 @@
-import { saveCheckInTeam, markCheckInSubmitted, replaceCheckInResources } from "../models/checkIn.model.js";
+import {
+    insertVolunteerCheckIn,
+    saveCheckInTeam,
+    markCheckInSubmitted,
+    replaceCheckInResources,
+} from "../models/checkIn.model.js";
 import { findTeamById } from "../models/team.model.js";
 import { pool } from "../config/db.js";
 import { HttpError } from "../utils/httpError.js";
@@ -110,4 +115,33 @@ export async function assignVolunteerToTeam(checkInId, teamId, { db = pool } = {
         });
     }
     return checkIn;
+}
+
+/**
+ * Saves a volunteer's check-in record with their authenticated identity (name and SAR badge number).
+ */
+export async function createVolunteerCheckIn(
+    {
+        volunteerId,
+        incidentId = 1,
+        name,
+        badgeNumber,
+        arrivalTime = null,
+        checkoutTime = null,
+        teamId = null,
+    },
+    { db = pool } = {},
+) {
+    return insertVolunteerCheckIn(
+        {
+            volunteerId,
+            incidentId,
+            name,
+            badgeNumber,
+            arrivalTime,
+            checkoutTime,
+            teamId,
+        },
+        db,
+    );
 }

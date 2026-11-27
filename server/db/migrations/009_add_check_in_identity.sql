@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE volunteer_check_ins
+  ADD COLUMN IF NOT EXISTS volunteer_name TEXT,
+  ADD COLUMN IF NOT EXISTS sar_badge_number TEXT,
+  ADD COLUMN IF NOT EXISTS arrival_time TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS checkout_time TIMESTAMPTZ;
+
+COMMIT;

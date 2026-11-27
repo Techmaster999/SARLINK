@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormProvider } from "react-hook-form";
 import ArrivalTimeField from "../../../src/components/checkin/ArrivalTimeField";
 import AvailableResourcesField from "../../../src/components/checkin/AvailableResourcesField";
 import TeamSelectionField from "../../../src/components/checkin/TeamSelectionField";
 import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
+import { useCurrentVolunteer } from "../../../src/hooks/useCurrentVolunteer";
+import {
+  attachVolunteerIdentityToCheckIn,
+  getCurrentVolunteerIdentity,
+} from "../../../src/services/authService";
 import "./CheckIn.css";
+
+export { getCurrentVolunteerIdentity, attachVolunteerIdentityToCheckIn };
 
 function TopoBackground() {
   const stroke = "rgba(10,10,10,0.07)";
@@ -43,17 +50,70 @@ function TopoBackground() {
   );
 }
 
-export default function CheckIn() {
-  const methods = useCheckInForm();
+export default function CheckIn({ currentVolunteer, onSubmitCheckIn }) {
+  const { volunteer, isAuthenticated } = useCurrentVolunteer(currentVolunteer);
+  const methods = useCheckInForm(volunteer);
   const [currentStep, setCurrentStep] = useState(1);
   const [showTimeInput, setShowTimeInput] = useState(false);
   const [selectedArrival, setSelectedArrival] = useState(null);
+  const [authError, setAuthError] = useState("");
+  const [submittedRecord, setSubmittedRecord] = useState(null);
   const presets = [
     { id: "15", label: "15 min" },
     { id: "30", label: "30 min" },
     { id: "60", label: "1 hour" },
     { id: "120", label: "2 hours" },
   ];
+
+  useEffect(() => {
+    if (volunteer) {
+      methods.setValue("volunteerName", volunteer.name);
+      methods.setValue("sarBadgeNumber", volunteer.badgeNumber);
+      setAuthError("");
+    }
+  }, [methods, volunteer]);
+
+  const handleCheckInSubmit = ({
+    hasVehicle,
+    vehicleType,
+    vehicleDescription,
+    hasDog,
+    dogNames,
+    dogDisciplines,
+    ...checkInData
+  }) => {
+    try {
+      const payload = attachVolunteerIdentityToCheckIn(
+        {
+          ...checkInData,
+          equipmentOther: (checkInData.equipmentOther || "").trim() || null,
+          vehicle: hasVehicle
+            ? {
+                type: vehicleType || null,
+                description: (vehicleDescription || "").trim() || null,
+              }
+            : null,
+          dogs: hasDog
+            ? {
+                names: (dogNames || "").trim(),
+                disciplines: dogDisciplines,
+              }
+            : null,
+        },
+        volunteer
+      );
+
+      setAuthError("");
+      setSubmittedRecord(payload);
+      if (typeof onSubmitCheckIn === "function") {
+        onSubmitCheckIn(payload);
+      } else {
+        console.info("Check-in details:", payload);
+      }
+    } catch (err) {
+      setAuthError(err.message || "You must be signed in to submit a check-in.");
+    }
+  };
 
   return (
     <FormProvider {...methods}>
@@ -93,28 +153,55 @@ export default function CheckIn() {
                     ? "Which team do you want to be assigned to?"
                     : "What you're bringing to this incident."}
               </p>
+
+              {isAuthenticated ? (
+                <div
+                  className="checkin-identity-banner"
+                  aria-label="Authenticated volunteer identity"
+                  data-testid="volunteer-identity-banner"
+                >
+                  <div className="checkin-identity-banner__item">
+                    <span className="checkin-identity-banner__label">Volunteer</span>
+                    <strong
+                      className="checkin-identity-banner__value"
+                      data-testid="volunteer-identity-name"
+                    >
+                      {volunteer.name}
+                    </strong>
+                  </div>
+                  <div className="checkin-identity-banner__item">
+                    <span className="checkin-identity-banner__label">SAR Badge</span>
+                    <strong
+                      className="checkin-identity-banner__badge"
+                      data-testid="volunteer-identity-badge"
+                    >
+                      {volunteer.badgeNumber}
+                    </strong>
+                  </div>
+                </div>
+              ) : (
+                <p className="checkin-auth-warning" role="alert">
+                  You are not signed in. Please sign in to submit a check-in.
+                </p>
+              )}
+              {authError && (
+                <p className="checkin-auth-error" role="alert">
+                  {authError}
+                </p>
+              )}
+              {submittedRecord && (
+                <div
+                  className="checkin-submitted-banner"
+                  role="status"
+                  data-testid="checkin-submitted-record"
+                >
+                  Checked in as <strong>{submittedRecord.name}</strong> (Badge{" "}
+                  <strong>{submittedRecord.badgeNumber}</strong>)
+                </div>
+              )}
             </header>
 
-            <form
-              onSubmit={methods.handleSubmit(({
-                hasVehicle,
-                vehicleType,
-                vehicleDescription,
-                hasDog,
-                dogNames,
-                dogDisciplines,
-                ...checkInData
-              }) => console.info("Check-in details:", {
-                ...checkInData,
-                equipmentOther: checkInData.equipmentOther.trim() || null,
-                vehicle: hasVehicle
-                  ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
-                  : null,
-                dogs: hasDog
-                  ? { names: dogNames.trim(), disciplines: dogDisciplines }
-                  : null,
-              }))}
-            >
+            <form onSubmit={methods.handleSubmit(handleCheckInSubmit)}>
               {currentStep === 1 ? (
                 <div className="checkin-dialog__body">
                   <p className="checkin-question">When will you arrive?</p>

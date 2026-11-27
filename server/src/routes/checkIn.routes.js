@@ -1,10 +1,18 @@
 import { Router } from 'express';
-import { assignCheckInTeam, saveCheckInResources, submitCheckIn } from '../controllers/checkInController.js';
+import {
+  assignCheckInTeam,
+  createCheckIn,
+  saveCheckInResources,
+  submitCheckIn,
+} from '../controllers/checkInController.js';
 import { requireIst } from '../middleware/requireIst.js';
 import { validateCheckInTeam } from '../middleware/validateCheckInTeam.js';
 import { validateCheckInResources } from '../middleware/validateCheckInResources.js';
 
 const router = Router();
+
+// Create a check-in record with the logged-in volunteer's automatically attached name and SAR badge number.
+router.post('/', createCheckIn);
 
 // Save the volunteer's selected resources (replaces any saved before). Body: { "resources": ["vehicle", "radio"] }
 // TODO (auth ticket): only the volunteer who owns this check-in should be able to call this.
