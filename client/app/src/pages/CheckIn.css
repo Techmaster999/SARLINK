@@ -129,11 +129,22 @@
   padding: 16px 24px 24px;
 }
 
+.checkin-dialog__body.is-hidden,
+.checkin-time-field[hidden] {
+  display: none;
+}
+
 .checkin-question,
 .checkin-time-field label {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
+}
+
+.checkin-validation-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
 }
 
 .checkin-presets {
