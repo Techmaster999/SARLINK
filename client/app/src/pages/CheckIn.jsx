@@ -52,6 +52,7 @@ export default function CheckIn() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showTimeInput, setShowTimeInput] = useState(false);
   const [selectedArrival, setSelectedArrival] = useState(null);
+  const arrivalTimeError = methods.formState.errors.arrivalTime;
   const presets = [
     { id: "15", label: "15 min" },
     { id: "30", label: "30 min" },
@@ -98,14 +99,14 @@ export default function CheckIn() {
               <p className="checkin-eyebrow">STEP {currentStep} OF 3</p>
               <h2 id="checkin-step-title">
                 {currentStep === 1
-                  ? "Arrival and check-out"
+                  ? "Arrival time"
                   : currentStep === 2
                     ? "Team assignment"
                     : "Equipment, vehicles and dogs"}
               </h2>
               <p className="checkin-description">
                 {currentStep === 1
-                  ? "When you expect to arrive and whether you have to leave by a set time."
+                  ? "When do you expect to arrive?"
                   : currentStep === 2
                     ? "Which team do you want to be assigned to?"
                     : "What you're bringing to this incident."}
@@ -136,38 +137,30 @@ export default function CheckIn() {
                   : null,
               }))}
             >
-              {currentStep === 1 ? (
-                <div className="checkin-dialog__body">
-                  <p className="checkin-question">When will you arrive?</p>
+              <div className={`checkin-dialog__body${currentStep === 1 ? "" : " is-hidden"}`}>
+                <p className="checkin-question">When will you arrive?</p>
 
-                  <div className="checkin-presets">
-                    {presets.map(({ id, label }) => (
-                      <button
-                        key={id}
-                        className={`checkin-chip ${selectedArrival === id ? "is-selected" : ""}`}
-                        type="button"
-                        aria-pressed={selectedArrival === id}
-                        onClick={() => {
-                          setSelectedArrival(id);
-                          setShowTimeInput(false);
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    className={`checkin-chip ${selectedArrival === "custom" ? "is-selected" : ""}`}
-                    type="button"
-                    aria-pressed={selectedArrival === "custom"}
-                    onClick={() => {
-                      setSelectedArrival("custom");
-                      setShowTimeInput(true);
-                    }}
-                  >
-                    Pick a time
-                  </button>
+                <div className="checkin-presets">
+                  {presets.map(({ id, label }) => (
+                    <button
+                      key={id}
+                      className={`checkin-chip ${selectedArrival === id ? "is-selected" : ""}`}
+                      type="button"
+                      aria-pressed={selectedArrival === id}
+                      onClick={() => {
+                        setSelectedArrival(id);
+                        setShowTimeInput(false);
+                        methods.setValue("arrivalTime", "", {
+                          shouldDirty: true,
+                          shouldValidate: false,
+                        });
+                        methods.clearErrors("arrivalTime");
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
 
                   {showTimeInput && (
                     <div className="checkin-time-field">
@@ -179,15 +172,22 @@ export default function CheckIn() {
                   )}
                   <CheckoutTimeField />
                 </div>
-              ) : currentStep === 2 ? (
+                {arrivalTimeError && (
+                  <p id="arrival-time-error" className="checkin-validation-error" role="alert">
+                    {arrivalTimeError.message}
+                  </p>
+                )}
+              </div>
+
+              {currentStep === 2 ? (
                 <div className="checkin-dialog__body">
                   <TeamSelectionField />
                 </div>
-              ) : (
+              ) : currentStep === 3 ? (
                 <div className="checkin-dialog__body">
                   <AvailableResourcesField />
                 </div>
-              )}
+              ) : null}
 
               <footer className="checkin-dialog__footer">
                 {currentStep > 1 && (

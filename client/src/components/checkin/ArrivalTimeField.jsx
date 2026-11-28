@@ -8,6 +8,7 @@ React Hook Form: manages form values
 */ 
 
 import { useFormContext } from "react-hook-form";
+import { validateArrivalTime } from "../../hooks/useCheckInForm";
 import "./ArrivalTimeField.css";
 
 export function handleArrivalTimeChange(arrivalTime, setValue) {
@@ -17,9 +18,14 @@ export function handleArrivalTimeChange(arrivalTime, setValue) {
   });
 }
 
-export default function ArrivalTimeField() {
-  const { register, setValue, watch } = useFormContext();
+export default function ArrivalTimeField({ selectedArrival = "custom" }) {
+  const { register, setValue, watch, formState: { errors } } = useFormContext();
   const arrivalTime = watch("arrivalTime", "");
+  const arrivalTimeRegistration = register("arrivalTime", {
+    validate: (value) => validateArrivalTime(
+      selectedArrival === "custom" ? value || "custom" : selectedArrival,
+    ),
+  });
 
   const onArrivalTimeChange = (event) => {
     handleArrivalTimeChange(event.target.value, setValue);
@@ -33,7 +39,9 @@ export default function ArrivalTimeField() {
       step={300}
       value={arrivalTime}
       aria-label="Arrival time"
-      {...register("arrivalTime")}
+      aria-invalid={Boolean(errors.arrivalTime)}
+      aria-describedby={errors.arrivalTime ? "arrival-time-error" : undefined}
+      {...arrivalTimeRegistration}
       onChange={onArrivalTimeChange}
     />
   );

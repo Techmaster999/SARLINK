@@ -4,9 +4,9 @@ BEGIN;
 ALTER TABLE volunteer_check_ins
   ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;
 
--- Once submitted, the volunteer's values (arrival time, incident, checkout time and any
--- column added later) can't change, and the lock can't be removed. Only the IST-managed
--- team assignment columns may still change. Enforced here so no request path can skip it.
+-- Once submitted, the volunteer's values and any column added later can't change, and the
+-- lock can't be removed. Only the IST-managed team assignment columns may still change.
+-- Enforced here so no request path can skip it.
 CREATE OR REPLACE FUNCTION prevent_submitted_check_in_edits() RETURNS trigger AS $$
 BEGIN
   IF OLD.submitted_at IS NOT NULL
