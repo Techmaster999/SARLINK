@@ -2,7 +2,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { FormProvider, useForm } from "react-hook-form";
 import { describe, expect, it, vi } from "vitest";
-import AvailableResourcesField from "./AvailableResourcesField";
+import AvailableResourcesField, {
+  toggleAvailableResource,
+} from "./AvailableResourcesField";
+
 
 function FormHarness({ onSubmit }) {
   const methods = useForm({
@@ -18,6 +21,7 @@ function FormHarness({ onSubmit }) {
     },
   });
 
+
   return (
     <FormProvider {...methods}>
       <form aria-label="Resources" onSubmit={methods.handleSubmit(onSubmit)}>
@@ -28,10 +32,20 @@ function FormHarness({ onSubmit }) {
   );
 }
 
+
 describe("AvailableResourcesField", () => {
+  it("adds and removes resources without duplicates", () => {
+    expect(toggleAvailableResource("radio", ["gps"])).toEqual(["gps", "radio"]);
+    expect(toggleAvailableResource("radio", ["gps", "radio", "radio"])).toEqual([
+      "gps",
+    ]);
+  });
+
+
   it("keeps independent resource selections and submits them", async () => {
     const onSubmit = vi.fn();
     render(<FormHarness onSubmit={onSubmit} />);
+
 
     fireEvent.click(screen.getByRole("button", { name: "Radio" }));
     fireEvent.click(screen.getByRole("button", { name: "GPS unit" }));
@@ -41,6 +55,7 @@ describe("AvailableResourcesField", () => {
       target: { value: "Blue ATV" },
     });
 
+
     const yesButtons = screen.getAllByRole("button", { name: "Yes" });
     fireEvent.click(yesButtons[1]);
     fireEvent.change(screen.getByLabelText("Dog name(s)"), {
@@ -48,12 +63,15 @@ describe("AvailableResourcesField", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Area / air scent" }));
 
+
     expect(screen.getByRole("button", { name: "Radio" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("button", { name: "GPS unit" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByLabelText("Make, colour or plate").value).toBe("Blue ATV");
     expect(screen.getByLabelText("Dog name(s)").value).toBe("Koda");
 
+
     fireEvent.submit(screen.getByRole("form", { name: "Resources" }));
+
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(
@@ -72,3 +90,6 @@ describe("AvailableResourcesField", () => {
     });
   });
 });
+
+
+

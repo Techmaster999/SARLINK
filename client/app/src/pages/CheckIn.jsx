@@ -7,10 +7,8 @@ import TeamSelectionField from "../../../src/components/checkin/TeamSelectionFie
 import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
 import "./CheckIn.css";
 
-
 function TopoBackground() {
   const stroke = "rgba(10,10,10,0.07)";
-
 
   return (
     <div className="checkin-topography" aria-hidden="true">
@@ -46,7 +44,6 @@ function TopoBackground() {
   );
 }
 
-
 export default function CheckIn() {
   const methods = useCheckInForm();
   const [currentStep, setCurrentStep] = useState(1);
@@ -60,16 +57,55 @@ export default function CheckIn() {
     { id: "120", label: "2 hours" },
   ];
 
-  const handleNext = () => {
-    if (currentStep === 1 && methods.getValues("hasHardCheckoutTime") === null) {
-      methods.setError("hasHardCheckoutTime", {
-        type: "required",
-        message: "Choose yes or no.",
-      });
-      return;
+  const handleCheckInSubmit = ({
+    hasVehicle,
+    vehicleType,
+    vehicleDescription,
+    hasDog,
+    dogNames,
+    dogDisciplines,
+    hasHardCheckoutTime,
+    checkoutTime,
+    ...checkInData
+  }) => console.info("Check-in details:", {
+    ...checkInData,
+    hasHardCheckoutTime,
+    checkoutTime: checkoutTime || null,
+    equipmentOther: checkInData.equipmentOther.trim() || null,
+    vehicle: hasVehicle
+      ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
+      : null,
+    dogs: hasDog
+      ? { names: dogNames.trim(), disciplines: dogDisciplines }
+      : null,
+  });
+
+  const handleInvalidSubmit = (errors) => {
+    if (errors.arrivalTime) {
+      setCurrentStep(1);
+      setShowTimeInput(selectedArrival === "custom");
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentStep === 1) {
+      const isArrivalTimeValid = await methods.trigger("arrivalTime");
+      const hasHardCheckoutChoice = methods.getValues("hasHardCheckoutTime") !== null;
+
+      if (hasHardCheckoutChoice) {
+        methods.clearErrors("hasHardCheckoutTime");
+      } else {
+        methods.setError("hasHardCheckoutTime", {
+          type: "required",
+          message: "Choose yes or no.",
+        });
+      }
+
+      if (!isArrivalTimeValid || !hasHardCheckoutChoice) return;
+    } else {
+      methods.clearErrors("hasHardCheckoutTime");
     }
 
-    methods.clearErrors("hasHardCheckoutTime");
     setCurrentStep((step) => step + 1);
   };
 
@@ -114,28 +150,7 @@ export default function CheckIn() {
             </header>
 
             <form
-              onSubmit={methods.handleSubmit(({
-                hasVehicle,
-                vehicleType,
-                vehicleDescription,
-                hasDog,
-                dogNames,
-                dogDisciplines,
-                hasHardCheckoutTime,
-                checkoutTime,
-                ...checkInData
-              }) => console.info("Check-in details:", {
-                ...checkInData,
-                hasHardCheckoutTime,
-                checkoutTime: checkoutTime || null,
-                equipmentOther: checkInData.equipmentOther.trim() || null,
-                vehicle: hasVehicle
-                  ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
-                  : null,
-                dogs: hasDog
-                  ? { names: dogNames.trim(), disciplines: dogDisciplines }
-                  : null,
-              }))}
+              onSubmit={methods.handleSubmit(handleCheckInSubmit, handleInvalidSubmit)}
             >
               <div className={`checkin-dialog__body${currentStep === 1 ? "" : " is-hidden"}`}>
                 <p className="checkin-question">When will you arrive?</p>
@@ -162,21 +177,31 @@ export default function CheckIn() {
                   ))}
                 </div>
 
-                  {showTimeInput && (
-                    <div className="checkin-time-field">
-                      <label htmlFor="arrivalTime">
-                        Arrival time (24-hour, e.g. 1430)
-                      </label>
-                      <ArrivalTimeField />
-                    </div>
-                  )}
-                  <CheckoutTimeField />
+                <button
+                  className={`checkin-chip ${selectedArrival === "custom" ? "is-selected" : ""}`}
+                  type="button"
+                  aria-pressed={selectedArrival === "custom"}
+                  onClick={() => {
+                    setSelectedArrival("custom");
+                    setShowTimeInput(true);
+                    methods.clearErrors("arrivalTime");
+                  }}
+                >
+                  Pick a time
+                </button>
+
+                <div className="checkin-time-field" hidden={!showTimeInput}>
+                  <label htmlFor="arrivalTime">
+                    Arrival time (24-hour, e.g. 1430)
+                  </label>
+                  <ArrivalTimeField selectedArrival={selectedArrival} />
                 </div>
                 {arrivalTimeError && (
                   <p id="arrival-time-error" className="checkin-validation-error" role="alert">
                     {arrivalTimeError.message}
                   </p>
                 )}
+                <CheckoutTimeField />
               </div>
 
               {currentStep === 2 ? (
