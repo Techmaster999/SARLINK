@@ -48,44 +48,12 @@ export default function CheckIn() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showTimeInput, setShowTimeInput] = useState(false);
   const [selectedArrival, setSelectedArrival] = useState(null);
-  const arrivalTimeError = methods.formState.errors.arrivalTime;
   const presets = [
     { id: "15", label: "15 min" },
     { id: "30", label: "30 min" },
     { id: "60", label: "1 hour" },
     { id: "120", label: "2 hours" },
   ];
-
-  const handleCheckInSubmit = ({
-    hasVehicle,
-    vehicleType,
-    vehicleDescription,
-    hasDog,
-    dogNames,
-    dogDisciplines,
-    ...checkInData
-  }) => console.info("Check-in details:", {
-    ...checkInData,
-    equipmentOther: checkInData.equipmentOther.trim() || null,
-    vehicle: hasVehicle
-      ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
-      : null,
-    dogs: hasDog
-      ? { names: dogNames.trim(), disciplines: dogDisciplines }
-      : null,
-  });
-
-  const handleInvalidSubmit = (errors) => {
-    if (errors.arrivalTime) {
-      setCurrentStep(1);
-      setShowTimeInput(selectedArrival === "custom");
-    }
-  };
-
-  const handleNext = async () => {
-    if (currentStep === 1 && !(await methods.trigger("arrivalTime"))) return;
-    setCurrentStep((step) => step + 1);
-  };
 
   return (
     <FormProvider {...methods}>
@@ -113,14 +81,14 @@ export default function CheckIn() {
               <p className="checkin-eyebrow">STEP {currentStep} OF 3</p>
               <h2 id="checkin-step-title">
                 {currentStep === 1
-                  ? "Arrival time"
+                  ? "Arrival and check-out"
                   : currentStep === 2
                     ? "Team assignment"
                     : "Equipment, vehicles and dogs"}
               </h2>
               <p className="checkin-description">
                 {currentStep === 1
-                  ? "When do you expect to arrive?"
+                  ? "When you expect to arrive and whether you have to leave by a set time."
                   : currentStep === 2
                     ? "Which team do you want to be assigned to?"
                     : "What you're bringing to this incident."}
@@ -128,68 +96,76 @@ export default function CheckIn() {
             </header>
 
             <form
-              onSubmit={methods.handleSubmit(handleCheckInSubmit, handleInvalidSubmit)}
+              onSubmit={methods.handleSubmit(({
+                hasVehicle,
+                vehicleType,
+                vehicleDescription,
+                hasDog,
+                dogNames,
+                dogDisciplines,
+                ...checkInData
+              }) => console.info("Check-in details:", {
+                ...checkInData,
+                equipmentOther: checkInData.equipmentOther.trim() || null,
+                vehicle: hasVehicle
+                  ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
+                  : null,
+                dogs: hasDog
+                  ? { names: dogNames.trim(), disciplines: dogDisciplines }
+                  : null,
+              }))}
             >
-              <div className={`checkin-dialog__body${currentStep === 1 ? "" : " is-hidden"}`}>
-                <p className="checkin-question">When will you arrive?</p>
+              {currentStep === 1 ? (
+                <div className="checkin-dialog__body">
+                  <p className="checkin-question">When will you arrive?</p>
 
-                <div className="checkin-presets">
-                  {presets.map(({ id, label }) => (
-                    <button
-                      key={id}
-                      className={`checkin-chip ${selectedArrival === id ? "is-selected" : ""}`}
-                      type="button"
-                      aria-pressed={selectedArrival === id}
-                      onClick={() => {
-                        setSelectedArrival(id);
-                        setShowTimeInput(false);
-                        methods.setValue("arrivalTime", "", {
-                          shouldDirty: true,
-                          shouldValidate: false,
-                        });
-                        methods.clearErrors("arrivalTime");
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  <div className="checkin-presets">
+                    {presets.map(({ id, label }) => (
+                      <button
+                        key={id}
+                        className={`checkin-chip ${selectedArrival === id ? "is-selected" : ""}`}
+                        type="button"
+                        aria-pressed={selectedArrival === id}
+                        onClick={() => {
+                          setSelectedArrival(id);
+                          setShowTimeInput(false);
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    className={`checkin-chip ${selectedArrival === "custom" ? "is-selected" : ""}`}
+                    type="button"
+                    aria-pressed={selectedArrival === "custom"}
+                    onClick={() => {
+                      setSelectedArrival("custom");
+                      setShowTimeInput(true);
+                    }}
+                  >
+                    Pick a time
+                  </button>
+
+                  {showTimeInput && (
+                    <div className="checkin-time-field">
+                      <label htmlFor="arrivalTime">
+                        Arrival time (24-hour, e.g. 1430)
+                      </label>
+                      <ArrivalTimeField />
+                    </div>
+                  )}
                 </div>
-
-                <button
-                  className={`checkin-chip ${selectedArrival === "custom" ? "is-selected" : ""}`}
-                  type="button"
-                  aria-pressed={selectedArrival === "custom"}
-                  onClick={() => {
-                    setSelectedArrival("custom");
-                    setShowTimeInput(true);
-                    methods.clearErrors("arrivalTime");
-                  }}
-                >
-                  Pick a time
-                </button>
-
-                <div className="checkin-time-field" hidden={!showTimeInput}>
-                  <label htmlFor="arrivalTime">
-                    Arrival time (24-hour, e.g. 1430)
-                  </label>
-                  <ArrivalTimeField selectedArrival={selectedArrival} />
-                </div>
-                {arrivalTimeError && (
-                  <p id="arrival-time-error" className="checkin-validation-error" role="alert">
-                    {arrivalTimeError.message}
-                  </p>
-                )}
-              </div>
-
-              {currentStep === 2 ? (
+              ) : currentStep === 2 ? (
                 <div className="checkin-dialog__body">
                   <TeamSelectionField />
                 </div>
-              ) : currentStep === 3 ? (
+              ) : (
                 <div className="checkin-dialog__body">
                   <AvailableResourcesField />
                 </div>
-              ) : null}
+              )}
 
               <footer className="checkin-dialog__footer">
                 {currentStep > 1 && (
@@ -205,7 +181,7 @@ export default function CheckIn() {
                   <button
                     className="checkin-next"
                     type="button"
-                    onClick={handleNext}
+                    onClick={() => setCurrentStep((step) => step + 1)}
                   >
                     Next
                   </button>

@@ -1,10 +1,6 @@
-import { useForm } from "react-hook-form";
+/* use check in form hook for DT-173 and DT-174  */
 
-export function validateArrivalTime(arrivalTime) {
-  if (arrivalTime === "custom") return "Pick an arrival time.";
-  if (!arrivalTime) return "Tell us when you expect to arrive.";
-  return true;
-}
+import { useForm } from "react-hook-form";
 
 export function useCheckInForm() {
   return useForm({

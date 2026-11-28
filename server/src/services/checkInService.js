@@ -10,8 +10,8 @@ const CHECK_IN_LOCKED = "SL409"; // raised by the trigger in migration 007
 
 /**
  * Locks a check-in after the volunteer submits it. From then on the database rejects any
- * change to the volunteer's submitted values; only the IST team assignment can still
- * change. Calling it again on a locked check-in is a no-op.
+ * change to the volunteer's values (arrival/checkout time, incident, etc.); only the IST
+ * team assignment can still change. Calling it again on a locked check-in is a no-op.
  *
  * @returns {Promise<object>} the check-in, with submittedAt set and isLocked: true
  */
@@ -27,7 +27,7 @@ export async function lockSubmittedCheckIn(checkInId, { db = pool } = {}) {
 
 /**
  * Turns the database's "already submitted" error into a 409. Wrap any future volunteer
- * update to submitted details with this, e.g. in a catch block.
+ * update (arrival/checkout time, incident, ...) with this, e.g. in a catch block.
  */
 export function rethrowIfCheckInLocked(err) {
     if (err?.code === CHECK_IN_LOCKED) {
