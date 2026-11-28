@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { FormProvider } from "react-hook-form";
 import ArrivalTimeField from "../../../src/components/checkin/ArrivalTimeField";
 import AvailableResourcesField from "../../../src/components/checkin/AvailableResourcesField";
+import CheckoutTimeField from "../../../src/components/checkin/CheckoutTimeField";
 import TeamSelectionField from "../../../src/components/checkin/TeamSelectionField";
 import { useCheckInForm } from "../../../src/hooks/useCheckInForm";
 import "./CheckIn.css";
 
+
 function TopoBackground() {
   const stroke = "rgba(10,10,10,0.07)";
+
 
   return (
     <div className="checkin-topography" aria-hidden="true">
@@ -43,6 +46,7 @@ function TopoBackground() {
   );
 }
 
+
 export default function CheckIn() {
   const methods = useCheckInForm();
   const [currentStep, setCurrentStep] = useState(1);
@@ -54,6 +58,19 @@ export default function CheckIn() {
     { id: "60", label: "1 hour" },
     { id: "120", label: "2 hours" },
   ];
+
+  const handleNext = () => {
+    if (currentStep === 1 && methods.getValues("hasHardCheckoutTime") === null) {
+      methods.setError("hasHardCheckoutTime", {
+        type: "required",
+        message: "Choose yes or no.",
+      });
+      return;
+    }
+
+    methods.clearErrors("hasHardCheckoutTime");
+    setCurrentStep((step) => step + 1);
+  };
 
   return (
     <FormProvider {...methods}>
@@ -103,9 +120,13 @@ export default function CheckIn() {
                 hasDog,
                 dogNames,
                 dogDisciplines,
+                hasHardCheckoutTime,
+                checkoutTime,
                 ...checkInData
               }) => console.info("Check-in details:", {
                 ...checkInData,
+                hasHardCheckoutTime,
+                checkoutTime: checkoutTime || null,
                 equipmentOther: checkInData.equipmentOther.trim() || null,
                 vehicle: hasVehicle
                   ? { type: vehicleType || null, description: vehicleDescription.trim() || null }
@@ -156,6 +177,7 @@ export default function CheckIn() {
                       <ArrivalTimeField />
                     </div>
                   )}
+                  <CheckoutTimeField />
                 </div>
               ) : currentStep === 2 ? (
                 <div className="checkin-dialog__body">
@@ -181,7 +203,7 @@ export default function CheckIn() {
                   <button
                     className="checkin-next"
                     type="button"
-                    onClick={() => setCurrentStep((step) => step + 1)}
+                    onClick={handleNext}
                   >
                     Next
                   </button>
