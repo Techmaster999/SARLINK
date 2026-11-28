@@ -19,7 +19,7 @@ export default function CheckoutTimeField() {
       shouldValidate: true,
     });
     if (!hasHardTime) {
-      handleCheckoutTimeChange("");
+      handleCheckoutTimeChange(null);
     }
   };
 
@@ -65,7 +65,7 @@ export default function CheckoutTimeField() {
             className="checkin-checkout-input"
             type="time"
             step={300}
-            value={checkoutTime}
+            value={checkoutTime ?? ""}
             aria-label="Check-out time"
             {...register("checkoutTime")}
             onChange={(event) => handleCheckoutTimeChange(event.target.value)}

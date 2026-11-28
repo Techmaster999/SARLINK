@@ -1,8 +1,10 @@
-/* DT-190 Available Resources Field 
+/* DT-190 Available Resources Field
 Implement equipment, vehicle, and dog selection controls */
+
 
 import { useFormContext } from "react-hook-form";
 import "./AvailableResourcesField.css";
+
 
 const EQUIPMENT = [
   { id: "radio", label: "Radio" },
@@ -13,6 +15,7 @@ const EQUIPMENT = [
   { id: "drone", label: "Drone" },
 ];
 
+
 const VEHICLES = [
   { id: "4x4", label: "4×4 truck / SUV" },
   { id: "car", label: "Car" },
@@ -21,6 +24,7 @@ const VEHICLES = [
   { id: "other", label: "Other" },
 ];
 
+
 const DOG_DISCIPLINES = [
   { id: "area", label: "Area / air scent" },
   { id: "trailing", label: "Trailing" },
@@ -28,6 +32,15 @@ const DOG_DISCIPLINES = [
   { id: "avalanche", label: "Avalanche" },
   { id: "training", label: "In training" },
 ];
+
+
+export function toggleAvailableResource(resourceType, selectedResources = []) {
+  const resources = [...new Set(selectedResources)];
+
+  return resources.includes(resourceType)
+    ? resources.filter((resource) => resource !== resourceType)
+    : [...resources, resourceType];
+}
 
 function ResourceChip({ label, selected, onClick }) {
   return (
@@ -42,6 +55,7 @@ function ResourceChip({ label, selected, onClick }) {
   );
 }
 
+
 function ResourceGroup({ label, children }) {
   return (
     <section className="available-resources__group" aria-label={label}>
@@ -49,6 +63,7 @@ function ResourceGroup({ label, children }) {
     </section>
   );
 }
+
 
 function OptionalTextField({ id, label, ...inputProps }) {
   return (
@@ -60,6 +75,7 @@ function OptionalTextField({ id, label, ...inputProps }) {
   );
 }
 
+
 export default function AvailableResourcesField() {
   const { register, setValue, watch } = useFormContext();
   const equipment = watch("equipment", []);
@@ -68,6 +84,7 @@ export default function AvailableResourcesField() {
   const hasDog = watch("hasDog");
   const dogDisciplines = watch("dogDisciplines", []);
 
+
   const handleResourceSelection = (resourceType, selected) => {
     setValue(resourceType, selected, {
       shouldDirty: true,
@@ -75,12 +92,14 @@ export default function AvailableResourcesField() {
     });
   };
 
+
   const toggleSelection = (resourceType, selectedItems, item) => {
-    const nextSelection = selectedItems.includes(item)
-      ? selectedItems.filter((selectedItem) => selectedItem !== item)
-      : [...selectedItems, item];
-    handleResourceSelection(resourceType, nextSelection);
+    handleResourceSelection(
+      resourceType,
+      toggleAvailableResource(item, selectedItems),
+    );
   };
+
 
   return (
     <div className="available-resources">
@@ -102,6 +121,7 @@ export default function AvailableResourcesField() {
           {...register("equipmentOther")}
         />
       </ResourceGroup>
+
 
       <ResourceGroup label="Vehicle">
         <p className="available-resources__label">Are you bringing a vehicle?</p>
@@ -137,6 +157,7 @@ export default function AvailableResourcesField() {
           </>
         )}
       </ResourceGroup>
+
 
       <ResourceGroup label="Dog">
         <p className="available-resources__label">Are you bringing a dog?</p>
@@ -176,3 +197,6 @@ export default function AvailableResourcesField() {
     </div>
   );
 }
+
+
+
